@@ -1,0 +1,81 @@
+/*
+ * Encryption Chat Plugin Styles
+ */
+
+/* Chat Bar Active Toggled State (Discord Green) */
+.vc-encryption-chat-active {
+    color: var(--green-360, #23a55a) !important;
+}
+
+.vc-encryption-chat-active path {
+    fill: var(--green-360, #23a55a) !important;
+}
+
+.vc-encryption-chat-icon {
+    scale: 1.085;
+    transition: color 0.15s ease;
+}
+
+/* Decrypted Message Accessory */
+.vc-xor-accessory {
+    color: var(--text-muted);
+    margin-top: 0.5em;
+    font-size: 0.95rem;
+    line-height: 1.35rem;
+    white-space: break-spaces;
+    border-left: 3px solid var(--green-360, #23a55a);
+    padding-left: 10px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    border-radius: 0 4px 4px 0;
+    background: rgba(35, 165, 90, 0.05);
+}
+
+.vc-xor-accessory-error {
+    border-left-color: var(--status-danger, #f23f43);
+    background: rgba(242, 63, 67, 0.05);
+}
+
+.vc-xor-accessory-icon {
+    margin-right: 0.35em;
+    vertical-align: -0.15em;
+    display: inline-block;
+    color: var(--green-360, #23a55a);
+}
+
+.vc-xor-accessory-error .vc-xor-accessory-icon {
+    color: var(--status-danger, #f23f43);
+}
+
+.vc-xor-content {
+    color: var(--text-normal);
+    font-style: normal;
+}
+
+.vc-xor-error-text {
+    color: var(--status-danger, #f23f43);
+    font-style: normal;
+    font-weight: 500;
+}
+
+.vc-xor-meta {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-style: italic;
+    display: inline-block;
+    margin-top: 4px;
+}
+
+/* Dismiss Link */
+.vc-xor-dismiss {
+    all: unset;
+    cursor: pointer;
+    color: var(--text-link);
+    font-style: normal;
+    font-weight: 500;
+    margin-left: 3px;
+}
+
+.vc-xor-dismiss:is(:hover, :focus) {
+    text-decoration: underline;
+}
