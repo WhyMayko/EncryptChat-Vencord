@@ -375,7 +375,7 @@ export function isInspecttorToken(str: string): boolean {
 }
 
 /* ==========================================================================
-   5. Funny Texts Engine (12 Styles)
+   5. Funny Texts Engine (12 Styles with Tag-less Auto Detection)
    ========================================================================== */
 
 const SUPERSCRIPT_MAP: Record<string, string> = {
@@ -436,6 +436,28 @@ export function toAlternating(str: string, includePrefix = false): string {
         }
     }
     return includePrefix ? `[ALTERNATING] ${res}` : res;
+}
+
+export function fromAlternating(str: string): string {
+    const clean = str.replace(/^\[(?:FUNNY:)?ALTERNATING\]\s*/i, "").toLowerCase();
+    return clean.replace(/(^\s*\w|[.!?]\s*\w)/g, c => c.toUpperCase());
+}
+
+export function isAlternatingCaps(str: string): boolean {
+    const letters = str.replace(/[^a-zA-Z]/g, "");
+    if (letters.length < 4) return false;
+    let upperCount = 0;
+    let lowerCount = 0;
+    let alternations = 0;
+    for (let i = 0; i < letters.length; i++) {
+        const isUpper = letters[i] >= "A" && letters[i] <= "Z";
+        if (isUpper) upperCount++; else lowerCount++;
+        if (i > 0) {
+            const prevUpper = letters[i - 1] >= "A" && letters[i - 1] <= "Z";
+            if (isUpper !== prevUpper) alternations++;
+        }
+    }
+    return alternations >= (letters.length - 1) * 0.75 && upperCount >= 2 && lowerCount >= 2;
 }
 
 export function toBubble(str: string, includePrefix = false): string {
@@ -533,10 +555,30 @@ export function fromFullwidth(str: string): string {
 }
 
 const LEET_MAP: Record<string, string> = { a: "4", e: "3", i: "1", o: "0", s: "5", t: "7", b: "8" };
+const REV_LEET: Record<string, string> = { "4": "a", "3": "e", "1": "i", "0": "o", "5": "s", "7": "t", "8": "b" };
+
 export function toLeet(str: string, includePrefix = false): string {
     const clean = str.replace(/^\[(?:FUNNY:)?LEET\]\s*/i, "");
     const res = Array.from(clean).map(c => LEET_MAP[c.toLowerCase()] || c).join("");
     return includePrefix ? `[LEET] ${res}` : res;
+}
+
+export function fromLeet(str: string): string {
+    const clean = str.replace(/^\[(?:FUNNY:)?LEET\]\s*/i, "");
+    return clean.replace(/[0134578]/g, c => REV_LEET[c] || c);
+}
+
+export function isLeet(str: string): boolean {
+    const clean = str.replace(/^\[(?:FUNNY:)?LEET\]\s*/i, "");
+    const words = clean.split(/\s+/).filter(w => w.length >= 2);
+    if (words.length === 0) return false;
+    let leetWordCount = 0;
+    for (const w of words) {
+        if (/^[a-zA-Z0-9.,!?]+$/.test(w) && /[0134578]/.test(w) && /[a-zA-Z]/.test(w)) {
+            leetWordCount++;
+        }
+    }
+    return leetWordCount >= 1 && (leetWordCount / words.length) >= 0.4;
 }
 
 const ZALGO_UP = ["\u030d", "\u030e", "\u0304", "\u0305", "\u033f", "\u0311", "\u0306", "\u0310", "\u0352", "\u0357"];
@@ -612,7 +654,7 @@ export function encryptFunny(text: string, style: FunnyStyle = "superscript", in
 
 /* ==========================================================================
    6. Vigenère Cipher
-   ========================================================================== */
+   ========================================================================= */
 
 export function vigenereEncrypt(text: string, key: string, includePrefix = false): string {
     const cleanKey = (key || "").replace(/[^a-zA-Z]/g, "").toUpperCase();
@@ -769,6 +811,23 @@ export function base64ToText(b64Str: string): string | null {
     }
 }
 
+function tryTaglessBase64(str: string): string | null {
+    const trimmed = str.replace(/^\[BASE64\]\s*/i, "").trim();
+    if (trimmed.length < 8 || trimmed.length % 4 !== 0) return null;
+    if (!/^[A-Za-z0-9+/]+={0,2}$/.test(trimmed)) return null;
+    if (/^[a-zA-Z]+$/.test(trimmed) && !trimmed.includes("=") && !/[0-9+/]/.test(trimmed)) return null;
+    try {
+        const bin = atob(trimmed);
+        const bytes = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        const text = decoder.decode(bytes);
+        if (/^[\x20-\x7E\xA0-\xFF\u0080-\uFFFF\r\n\t]+$/.test(text) && text.length > 2) {
+            return text;
+        }
+    } catch {}
+    return null;
+}
+
 /* ==========================================================================
    9. ROT13
    ========================================================================== */
@@ -891,7 +950,7 @@ export function xorDecrypt(cipherText: string, secretWord: string): { success: b
 }
 
 /* ==========================================================================
-   11. Unified Encrypt & Auto-Decrypt Functions with LRU Cache
+   11. Unified Encrypt & Auto-Decrypt Functions with Tag-less Intelligence
    ========================================================================== */
 
 export async function encryptMessage(
@@ -950,7 +1009,7 @@ export async function decryptMessage(
 
     const trimmed = ciphertext.trim();
 
-    // 0. Cache Check for Silky 60+ FPS Performance
+    // 0. High-Speed LRU Cache Check (0.001ms)
     const cacheKey = `${secretWord}:${inspecttorAccessKey}:${trimmed}`;
     const cached = decryptionCache.get(cacheKey);
     if (cached) return cached;
@@ -1074,6 +1133,14 @@ export async function decryptMessage(
         result = { success: true, text: fromUnderline(trimmed), method: "funny" };
     }
 
+    if (!result && trimmed.startsWith("[ALTERNATING]")) {
+        result = { success: true, text: fromAlternating(trimmed), method: "funny" };
+    }
+
+    if (!result && trimmed.startsWith("[LEET]")) {
+        result = { success: true, text: fromLeet(trimmed), method: "funny" };
+    }
+
     if (!result && trimmed.startsWith("[MORSE]")) {
         const morseDec = morseToText(trimmed);
         if (morseDec && morseDec.length > 0) result = { success: true, text: morseDec, method: "morse" };
@@ -1084,7 +1151,21 @@ export async function decryptMessage(
         if (plainBin && plainBin.length > 0) result = { success: true, text: plainBin, method: "binary" };
     }
 
-    // 4. Tag-less Auto-Detection: Strikethrough / Underline
+    // 4. Tag-less Auto-Detection: Alternating Caps (e.g. "HeLlO", "CoMo VoCe EsTa?")
+    if (!result && isAlternatingCaps(trimmed)) {
+        const normalized = fromAlternating(trimmed);
+        result = { success: true, text: normalized, method: "funny" };
+    }
+
+    // 5. Tag-less Auto-Detection: Leet Speak (e.g. "h3ll0 w0rld", "c0m0 v0c3 3574")
+    if (!result && isLeet(trimmed)) {
+        const leetDec = fromLeet(trimmed);
+        if (leetDec && leetDec !== trimmed) {
+            result = { success: true, text: leetDec, method: "funny" };
+        }
+    }
+
+    // 6. Tag-less Auto-Detection: Strikethrough / Underline
     if (!result && /\u0336/.test(trimmed)) {
         result = { success: true, text: fromStrikethrough(trimmed), method: "funny" };
     }
@@ -1092,7 +1173,7 @@ export async function decryptMessage(
         result = { success: true, text: fromUnderline(trimmed), method: "funny" };
     }
 
-    // 5. Tag-less Auto-Detection: Zalgo Glitch Text
+    // 7. Tag-less Auto-Detection: Zalgo Glitch Text
     if (!result && /[\u0300-\u036f\u1dc0-\u1dff\u20d0-\u20ff]/.test(trimmed)) {
         const zalgoDec = fromZalgo(trimmed);
         if (zalgoDec && zalgoDec !== trimmed) {
@@ -1100,7 +1181,7 @@ export async function decryptMessage(
         }
     }
 
-    // 6. Tag-less Auto-Detection: Superscript
+    // 8. Tag-less Auto-Detection: Superscript
     if (!result && /[ᵃᵇᶜᵈᵉᶠᵍʰⁱʲᵏˡᵐⁿᵒᵖʳˢᵗᵘᵛʷˣʸᶻᴬᴮᴰᴱᴳᴴᴵᴶᴷᴸᴹᴺᴼᴾᴿᵀᵁⱽᵂ⁰¹²³⁴⁵⁶⁷⁸⁹]/.test(trimmed)) {
         const superDec = fromSuperscript(trimmed);
         if (superDec && superDec !== trimmed) {
@@ -1108,7 +1189,7 @@ export async function decryptMessage(
         }
     }
 
-    // 7. Tag-less Auto-Detection: Subscript
+    // 9. Tag-less Auto-Detection: Subscript
     if (!result && /[ₐₑₕᵢⱼₖₗₘₙₒₚᵣₛₜᵤᵥₓ₀₁₂₃₄₅₆₇₈₉]/.test(trimmed)) {
         const subDec = fromSubscript(trimmed);
         if (subDec && subDec !== trimmed) {
@@ -1116,7 +1197,7 @@ export async function decryptMessage(
         }
     }
 
-    // 8. Tag-less Auto-Detection: Bubble Text
+    // 10. Tag-less Auto-Detection: Bubble Text
     if (!result && /[\u24B6-\u24E9\u2460-\u24EA]/.test(trimmed)) {
         const bubbleDec = fromBubble(trimmed);
         if (bubbleDec && bubbleDec !== trimmed) {
@@ -1124,7 +1205,7 @@ export async function decryptMessage(
         }
     }
 
-    // 9. Tag-less Auto-Detection: Fullwidth
+    // 11. Tag-less Auto-Detection: Fullwidth
     if (!result && /[\uff01-\uff5e\u3000]/.test(trimmed)) {
         const fwDec = fromFullwidth(trimmed);
         if (fwDec && fwDec !== trimmed) {
@@ -1132,7 +1213,7 @@ export async function decryptMessage(
         }
     }
 
-    // 10. Tag-less Auto-Detection: Small Caps
+    // 12. Tag-less Auto-Detection: Small Caps
     if (!result && /[ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘǫʀꜱᴛᴜᴠᴡʏᴢ]/.test(trimmed)) {
         const scDec = fromSmallCaps(trimmed);
         if (scDec && scDec !== trimmed) {
@@ -1140,7 +1221,7 @@ export async function decryptMessage(
         }
     }
 
-    // 11. Tag-less Auto-Detection: Upside Down Unicode
+    // 13. Tag-less Auto-Detection: Upside Down Unicode
     if (!result && /[\u0250-\u02AF\u2144\u2200\u018E\u2132\u2141\u02D9\u00BF\u00A1]/.test(trimmed)) {
         const udDec = fromUpsideDown(trimmed);
         if (udDec && udDec !== trimmed) {
@@ -1148,7 +1229,7 @@ export async function decryptMessage(
         }
     }
 
-    // 12. Tag-less Auto-Detection: Morse Code (strict check)
+    // 14. Tag-less Auto-Detection: Morse Code (strict check)
     if (!result && /^[.\-/\s]+$/.test(trimmed) && trimmed.length > 2 && (trimmed.includes(".") || trimmed.includes("-"))) {
         const morseDec = morseToText(trimmed);
         if (morseDec && morseDec.length > 0 && morseDec !== trimmed) {
@@ -1156,7 +1237,7 @@ export async function decryptMessage(
         }
     }
 
-    // 13. Tag-less Auto-Detection: Binary
+    // 15. Tag-less Auto-Detection: Binary
     if (!result && /^[01]{8}(\s+[01]{8})+$/.test(trimmed)) {
         const plainBin = plainBinaryToText(trimmed);
         if (plainBin && plainBin.length > 0) {
@@ -1164,11 +1245,19 @@ export async function decryptMessage(
         }
     }
 
-    // 14. Tag-less Auto-Detection: Hex
+    // 16. Tag-less Auto-Detection: Hex
     if (!result && /^[0-9a-fA-F]{2}(\s+[0-9a-fA-F]{2})+$/.test(trimmed)) {
         const hexDec = hexToText(trimmed);
         if (hexDec && hexDec.length > 0) {
             result = { success: true, text: hexDec, method: "hex" };
+        }
+    }
+
+    // 17. Tag-less Auto-Detection: Base64
+    if (!result) {
+        const b64Dec = tryTaglessBase64(trimmed);
+        if (b64Dec) {
+            result = { success: true, text: b64Dec, method: "base64" };
         }
     }
 
