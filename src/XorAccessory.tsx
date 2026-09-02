@@ -1,6 +1,6 @@
 /*
  * Encrypt Chat - Message Accessory Component
- * Created by Mayko (@whymayko)
+ * Made with 💜 by Mayko (@whymayko)
  */
 
 import { copyToClipboard } from "@utils/clipboard";
@@ -126,7 +126,9 @@ export function XorAccessory({ message }: { message: Message }) {
                     <span className="vc-xor-error-text">{decrypted.text}</span>
                 </div>
                 <div className="vc-xor-meta">
-                    Decryption Failed • <Dismiss onDismiss={() => setDecrypted(undefined)} />
+                    <span>Decryption Failed</span>
+                    <span className="vc-xor-meta-separator">•</span>
+                    <Dismiss onDismiss={() => setDecrypted(undefined)} />
                 </div>
             </div>
         );
@@ -148,7 +150,11 @@ export function XorAccessory({ message }: { message: Message }) {
                 </span>
             </div>
             <div className="vc-xor-meta">
-                {methodDisplay} • <CopyButton text={decrypted.text} /> • <Dismiss onDismiss={() => setDecrypted(undefined)} />
+                <span>{methodDisplay}</span>
+                <span className="vc-xor-meta-separator">•</span>
+                <CopyButton text={decrypted.text} />
+                <span className="vc-xor-meta-separator">•</span>
+                <Dismiss onDismiss={() => setDecrypted(undefined)} />
             </div>
         </div>
     );

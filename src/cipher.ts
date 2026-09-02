@@ -1,7 +1,7 @@
 /*
  * Encrypt Chat - Cipher & Translation Engine
- * Supports: Inspecttor (Server & Offline), PGP, Funny Texts, XOR Cipher, Vigenère, Morse Code, Binary, Hexadecimal, Base64, ROT13
- * Created by Mayko (@whymayko)
+ * Supports: Inspecttor (Server & Offline), PGP (Clean Binary Base64), Funny Texts, XOR Cipher, Vigenère, Morse Code, Binary, Hexadecimal, Base64, ROT13
+ * Made with 💜 by Mayko (@whymayko)
  */
 
 import { deflateSync, inflateSync } from "fflate";
@@ -58,7 +58,7 @@ export function clearDecryptionCache() {
 }
 
 /* ==========================================================================
-   1. PGP Engine (OpenPGP Industry Standard)
+   1. PGP Engine (Clean Binary Base64 - No Ugly Headers)
    ========================================================================== */
 
 export async function encryptPgp(text: string, secretWord: string, includePrefix = false): Promise<string> {
@@ -66,26 +66,56 @@ export async function encryptPgp(text: string, secretWord: string, includePrefix
     if (!effectivePass) throw new Error("Secret Word is required for PGP encryption.");
 
     const message = await openpgp.createMessage({ text });
-    const armored = await openpgp.encrypt({
+    const binary = await openpgp.encrypt({
         message,
         passwords: [effectivePass],
-        format: "armored"
+        format: "binary"
     });
-    const cleanArmored = typeof armored === "string" ? armored.trim() : "";
-    return includePrefix ? `[PGP]\n${cleanArmored}` : cleanArmored;
+
+    const binaryBytes = new Uint8Array(binary as any);
+    let binStr = "";
+    for (let i = 0; i < binaryBytes.length; i++) binStr += String.fromCharCode(binaryBytes[i]);
+    const cleanB64 = btoa(binStr);
+
+    return includePrefix ? `[PGP] ${cleanB64}` : cleanB64;
 }
 
-export async function decryptPgp(armoredText: string, secretWord: string): Promise<string> {
+export async function decryptPgp(ciphertext: string, secretWord: string): Promise<string> {
     const effectivePass = (secretWord || "").trim();
     if (!effectivePass) throw new Error("Secret Word is required for PGP decryption.");
 
-    const cleanArmored = armoredText.replace(/^\[PGP\]\s*/i, "").trim();
-    const message = await openpgp.readMessage({ armoredMessage: cleanArmored });
+    const cleaned = ciphertext.replace(/^\[PGP\]\s*/i, "").trim();
+
+    // 1. Support legacy ASCII-armored format if received
+    if (cleaned.includes("-----BEGIN PGP MESSAGE-----")) {
+        const message = await openpgp.readMessage({ armoredMessage: cleaned });
+        const { data: decrypted } = await openpgp.decrypt({
+            message,
+            passwords: [effectivePass],
+            format: "utf8"
+        });
+        return String(decrypted);
+    }
+
+    // 2. Clean binary Base64 format
+    const binStr = atob(cleaned.replace(/\s+/g, ""));
+    const bytes = new Uint8Array(binStr.length);
+    for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
+
+    const message = await openpgp.readMessage({ binaryMessage: bytes });
     const { data: decrypted } = await openpgp.decrypt({
         message,
-        passwords: [effectivePass]
+        passwords: [effectivePass],
+        format: "utf8"
     });
     return String(decrypted);
+}
+
+export function isPgpToken(str: string): boolean {
+    const cleaned = str.replace(/^\[PGP\]\s*/i, "").trim();
+    if (cleaned.includes("-----BEGIN PGP MESSAGE-----")) return true;
+    if (cleaned.startsWith("wy4ECQ") && cleaned.length >= 80) return true;
+    return false;
 }
 
 /* ==========================================================================
@@ -654,7 +684,7 @@ export function encryptFunny(text: string, style: FunnyStyle = "superscript", in
 
 /* ==========================================================================
    6. Vigenère Cipher
-   ========================================================================= */
+   ========================================================================== */
 
 export function vigenereEncrypt(text: string, key: string, includePrefix = false): string {
     const cleanKey = (key || "").replace(/[^a-zA-Z]/g, "").toUpperCase();
@@ -950,7 +980,7 @@ export function xorDecrypt(cipherText: string, secretWord: string): { success: b
 }
 
 /* ==========================================================================
-   11. Unified Encrypt & Auto-Decrypt Functions with Tag-less Intelligence
+   11. Unified Encrypt & Auto-Decrypt Functions
    ========================================================================== */
 
 export async function encryptMessage(
@@ -1016,8 +1046,8 @@ export async function decryptMessage(
 
     let result: DecryptResult | null = null;
 
-    // 1. PGP Armored Message Detection
-    if (trimmed.includes("-----BEGIN PGP MESSAGE-----") || trimmed.startsWith("[PGP]")) {
+    // 1. PGP Message Detection (Clean Base64 or Legacy Armored)
+    if (trimmed.startsWith("[PGP]") || isPgpToken(trimmed)) {
         try {
             const dec = await decryptPgp(trimmed, secretWord);
             if (dec && dec.length > 0) {
@@ -1151,13 +1181,13 @@ export async function decryptMessage(
         if (plainBin && plainBin.length > 0) result = { success: true, text: plainBin, method: "binary" };
     }
 
-    // 4. Tag-less Auto-Detection: Alternating Caps (e.g. "HeLlO", "CoMo VoCe EsTa?")
+    // 4. Tag-less Auto-Detection: Alternating Caps
     if (!result && isAlternatingCaps(trimmed)) {
         const normalized = fromAlternating(trimmed);
         result = { success: true, text: normalized, method: "funny" };
     }
 
-    // 5. Tag-less Auto-Detection: Leet Speak (e.g. "h3ll0 w0rld", "c0m0 v0c3 3574")
+    // 5. Tag-less Auto-Detection: Leet Speak
     if (!result && isLeet(trimmed)) {
         const leetDec = fromLeet(trimmed);
         if (leetDec && leetDec !== trimmed) {
@@ -1229,7 +1259,7 @@ export async function decryptMessage(
         }
     }
 
-    // 14. Tag-less Auto-Detection: Morse Code (strict check)
+    // 14. Tag-less Auto-Detection: Morse Code
     if (!result && /^[.\-/\s]+$/.test(trimmed) && trimmed.length > 2 && (trimmed.includes(".") || trimmed.includes("-"))) {
         const morseDec = morseToText(trimmed);
         if (morseDec && morseDec.length > 0 && morseDec !== trimmed) {
@@ -1267,7 +1297,6 @@ export async function decryptMessage(
         method: "unknown"
     };
 
-    // Cache successful results to prevent repetitive PBKDF2 compute
     if (finalResult.success) {
         if (decryptionCache.size >= MAX_CACHE_ENTRIES) {
             const first = decryptionCache.keys().next().value;
