@@ -37,7 +37,7 @@ if (-not (Test-Path $BackupDir)) {
 
 # 3. Close Discord
 Write-Host "[+] Closing Discord to apply updates..." -ForegroundColor Yellow
-Get-Process Discord -ErrorAction SilentlyContinue | Stop-Process -Force
+Get-Process Discord, DiscordPTB, DiscordCanary, DiscordDevelopment -ErrorAction SilentlyContinue | Stop-Process -Force
 Start-Sleep -Seconds 2
 
 # 4. Download latest Encrypt Chat bundle files
@@ -109,17 +109,11 @@ Set-JsonProp $j.plugins "MessageAccessoriesAPI" ([pscustomobject]@{ enabled = $t
 $jsonText = $j | ConvertTo-Json -Depth 30
 [System.IO.File]::WriteAllText($SettingsFile, $jsonText, (New-Object System.Text.UTF8Encoding $false))
 
-# 6. Restart Discord
-Write-Host "[+] Restarting Discord..." -ForegroundColor Green
-$update = Join-Path $env:LOCALAPPDATA "Discord\Update.exe"
-if (Test-Path $update) {
-    & $update --processStart Discord.exe
-}
-
 Write-Host ""
 Write-Host "====================================================" -ForegroundColor Cyan
 Write-Host "       Installation Completed Successfully!        " -ForegroundColor Green
 Write-Host "====================================================" -ForegroundColor Cyan
+Write-Host "You can now open Discord!" -ForegroundColor Yellow
 Write-Host "The lock icon will appear in your chat bar." -ForegroundColor Gray
 Write-Host "- Left Click:  Toggle encryption on/off (turns green when active)." -ForegroundColor Gray
 Write-Host "- Right Click: Open Settings & Live Playground." -ForegroundColor Gray
