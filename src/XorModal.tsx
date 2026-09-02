@@ -26,8 +26,8 @@ import {
 import { settings } from "./settings";
 
 const methodOptions = [
-    { label: "Inspecttor Server", value: "inspecttor_server" as CipherMethod },
-    { label: "Inspecttor Offline", value: "inspecttor_offline" as CipherMethod },
+    { label: "Server", value: "inspecttor_server" as CipherMethod },
+    { label: "Offline", value: "inspecttor_offline" as CipherMethod },
     { label: "PGP", value: "pgp" as CipherMethod },
     { label: "Funny Texts", value: "funny" as CipherMethod },
     { label: "XOR Cipher", value: "xor" as CipherMethod },
@@ -130,7 +130,7 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
         method === "xor" ||
         method === "vigenere";
 
-    const isServerInspecttor = method === "inspecttor_server";
+    const isServerMode = method === "inspecttor_server";
 
     return (
         <Modal {...rootProps} title="Encrypt Chat - Vencord Settings">
@@ -149,13 +149,13 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
                 />
             </section>
 
-            {/* Inspecttor Server Access Key */}
-            {isServerInspecttor && (
+            {/* Server Access Key */}
+            {isServerMode && (
                 <section className={Margins.bottom16}>
-                    <Forms.FormTitle tag="h3">Inspecttor Server Access Key</Forms.FormTitle>
+                    <Forms.FormTitle tag="h3">Server Access Key</Forms.FormTitle>
                     <TextInput
                         value={inspecttorAccessKey || ""}
-                        placeholder="Enter inspecttor access key..."
+                        placeholder="Enter server access key..."
                         onChange={(val: string) => {
                             settings.store.inspecttorAccessKey = val;
                         }}

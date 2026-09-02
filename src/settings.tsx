@@ -13,8 +13,8 @@ export const settings = definePluginSettings({
         type: OptionType.SELECT,
         description: "Encryption and Obfuscation Method",
         options: [
-            { label: "Inspecttor Server", value: "inspecttor_server", default: true },
-            { label: "Inspecttor Offline", value: "inspecttor_offline" },
+            { label: "Server", value: "inspecttor_server", default: true },
+            { label: "Offline", value: "inspecttor_offline" },
             { label: "PGP", value: "pgp" },
             { label: "Funny Texts", value: "funny" },
             { label: "XOR Cipher", value: "xor" },
@@ -51,7 +51,7 @@ export const settings = definePluginSettings({
     },
     inspecttorAccessKey: {
         type: OptionType.STRING,
-        description: "Inspecttor Server Access Key",
+        description: "Server Access Key",
         default: ""
     },
     xorFormat: {

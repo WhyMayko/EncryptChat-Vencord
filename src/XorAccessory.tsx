@@ -40,9 +40,9 @@ function Dismiss({ onDismiss }: { onDismiss: () => void }) {
 }
 
 const METHOD_LABELS: Record<string, string> = {
-    inspecttor_server: "Inspecttor Server",
-    inspecttor_offline: "Inspecttor Offline",
-    inspecttor: "Inspecttor",
+    inspecttor_server: "Server",
+    inspecttor_offline: "Offline",
+    inspecttor: "Server",
     pgp: "PGP",
     funny: "Funny Text",
     xor: "XOR Cipher",
