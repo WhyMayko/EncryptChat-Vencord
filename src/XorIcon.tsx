@@ -4,6 +4,7 @@
 
 import { ChatBarButton, ChatBarButtonFactory } from "@api/ChatButtons";
 
+import { settings } from "./settings";
 import { openXorModal } from "./XorModal";
 
 export function XorIcon(props: React.SVGProps<SVGSVGElement>) {
@@ -20,10 +21,8 @@ export function XorIcon(props: React.SVGProps<SVGSVGElement>) {
     );
 }
 
-export const XorChatBarIcon: ChatBarButtonFactory = ({ isMainChat, settings }) => {
-    if (!isMainChat) return null;
-
-    const autoEncrypt = settings.use(["autoEncrypt"]).autoEncrypt;
+export const XorChatBarIcon: ChatBarButtonFactory = () => {
+    const { autoEncrypt } = settings.use(["autoEncrypt"]);
 
     return (
         <ChatBarButton
