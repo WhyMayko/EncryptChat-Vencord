@@ -23,25 +23,25 @@ Write-Host ""
 
 # 1. Check if Vencord is installed
 if (-not (Test-Path (Join-Path $DistDir "patcher.js"))) {
-    Write-Host "[!] Vencord nao foi encontrado no seu computador." -ForegroundColor Red
-    Write-Host "Por favor, instale o Vencord primeiro em https://vencord.dev (clique em Download/Install) e depois execute este comando novamente." -ForegroundColor Yellow
+    Write-Host "[!] Vencord was not found on your system." -ForegroundColor Red
+    Write-Host "Please install Vencord first from https://vencord.dev (click Download/Install) and run this command again." -ForegroundColor Yellow
     return
 }
 
 # 2. Backup existing bundle
 $BackupDir = Join-Path $VencordDir "dist.bak"
 if (-not (Test-Path $BackupDir)) {
-    Write-Host "[+] Criando backup do seu Vencord atual em dist.bak..." -ForegroundColor Gray
+    Write-Host "[+] Creating backup of current Vencord files in dist.bak..." -ForegroundColor Gray
     Copy-Item $DistDir $BackupDir -Recurse -Force
 }
 
 # 3. Close Discord
-Write-Host "[+] Fechando o Discord para atualizar os arquivos..." -ForegroundColor Yellow
+Write-Host "[+] Closing Discord to apply updates..." -ForegroundColor Yellow
 Get-Process Discord -ErrorAction SilentlyContinue | Stop-Process -Force
 Start-Sleep -Seconds 2
 
 # 4. Download latest Encrypt Chat bundle files
-Write-Host "[+] Baixando os arquivos do Encrypt Chat..." -ForegroundColor Cyan
+Write-Host "[+] Downloading Encrypt Chat files..." -ForegroundColor Cyan
 $FilesToDownload = @(
     "patcher.js",
     "preload.js",
@@ -58,14 +58,14 @@ foreach ($f in $FilesToDownload) {
     $out = Join-Path $DistDir $f
     try {
         Invoke-WebRequest -Uri $url -OutFile $out -UseBasicParsing
-        Write-Host "  -> $f baixado com sucesso!" -ForegroundColor Green
+        Write-Host "  -> $f downloaded successfully!" -ForegroundColor Green
     } catch {
-        Write-Host "  [!] Aviso: Nao foi possivel baixar $f (usando versao local se disponivel)" -ForegroundColor DarkGray
+        Write-Host "  [!] Warning: Could not download $f (using local version if available)" -ForegroundColor DarkGray
     }
 }
 
 # 5. Configure settings.json
-Write-Host "[+] Configurando o plugin no settings.json..." -ForegroundColor Cyan
+Write-Host "[+] Configuring plugin in settings.json..." -ForegroundColor Cyan
 function Set-JsonProp($obj, $name, $val) {
     $obj | Add-Member -NotePropertyName $name -NotePropertyValue $val -Force
 }
@@ -110,7 +110,7 @@ $jsonText = $j | ConvertTo-Json -Depth 30
 [System.IO.File]::WriteAllText($SettingsFile, $jsonText, (New-Object System.Text.UTF8Encoding $false))
 
 # 6. Restart Discord
-Write-Host "[+] Reiniciando o Discord..." -ForegroundColor Green
+Write-Host "[+] Restarting Discord..." -ForegroundColor Green
 $DiscordUpdate = Join-Path $env:LOCALAPPDATA "Discord\Update.exe"
 if (Test-Path $DiscordUpdate) {
     & $DiscordUpdate --processStart Discord.exe
@@ -118,9 +118,9 @@ if (Test-Path $DiscordUpdate) {
 
 Write-Host ""
 Write-Host "====================================================" -ForegroundColor Cyan
-Write-Host "  Instalacao Concluida com Sucesso!                 " -ForegroundColor Green
+Write-Host "       Installation Completed Successfully!        " -ForegroundColor Green
 Write-Host "====================================================" -ForegroundColor Cyan
-Write-Host "O icone de cadeado aparecera na sua barra de chat." -ForegroundColor Gray
-Write-Host "- Clique normal: Ativa/Desativa a criptografia (fica verde)." -ForegroundColor Gray
-Write-Host "- Shift + Clique: Abre as configuracoes e o Live Playground." -ForegroundColor Gray
+Write-Host "The lock icon will appear in your chat bar." -ForegroundColor Gray
+Write-Host "- Normal Click: Toggle encryption on/off (turns green when active)." -ForegroundColor Gray
+Write-Host "- Shift + Click: Open Settings & Live Playground." -ForegroundColor Gray
 Write-Host ""
