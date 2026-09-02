@@ -1,8 +1,3 @@
-/*
- * Encrypt Chat - Settings & Testing Modal
- * Made with 💜 by Mayko (@whymayko)
- */
-
 import { Divider } from "@components/Divider";
 import { FormSwitch } from "@components/FormSwitch";
 import { copyToClipboard } from "@utils/clipboard";
@@ -196,7 +191,6 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
 
     return (
         <Modal {...rootProps} title="Encrypt Chat - Settings">
-            {/* 1. Main Encryption Method */}
             <section className={Margins.bottom16}>
                 <Forms.FormTitle tag="h3">Encryption Method</Forms.FormTitle>
                 <SearchableSelect
@@ -211,7 +205,6 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
                 />
             </section>
 
-            {/* 2. Inspecttor Mode */}
             {method === "inspecttor" && (
                 <section className={Margins.bottom16}>
                     <Forms.FormTitle tag="h3">Inspecttor Mode</Forms.FormTitle>
@@ -228,7 +221,6 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
                 </section>
             )}
 
-            {/* 3. Server Access Key */}
             {isServerInspecttor && (
                 <section className={Margins.bottom16}>
                     <Forms.FormTitle tag="h3">Server Access Key</Forms.FormTitle>
@@ -242,7 +234,6 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
                 </section>
             )}
 
-            {/* 4. Secret Word / Passphrase */}
             {needsSecretKey && (
                 <section className={Margins.bottom16}>
                     <Forms.FormTitle tag="h3">Secret Word / Passphrase</Forms.FormTitle>
@@ -256,7 +247,6 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
                 </section>
             )}
 
-            {/* 5. Discord Style Selector */}
             {method === "discord" && (
                 <section className={Margins.bottom16}>
                     <Forms.FormTitle tag="h3">Discord Style</Forms.FormTitle>
@@ -273,7 +263,6 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
                 </section>
             )}
 
-            {/* 6. Funny Text Style */}
             {method === "funny" && (
                 <section className={Margins.bottom16}>
                     <Forms.FormTitle tag="h3">Funny Text Style</Forms.FormTitle>
@@ -290,7 +279,6 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
                 </section>
             )}
 
-            {/* 7. XOR Output Format */}
             {method === "xor" && (
                 <section className={Margins.bottom16}>
                     <Forms.FormTitle tag="h3">XOR Output Format</Forms.FormTitle>
@@ -309,7 +297,6 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
 
             <Divider className={Margins.bottom16} />
 
-            {/* Include Method Prefix */}
             <FormSwitch
                 title="Include Method Prefix"
                 description="Adds tags like [PGP] or [DISCORD] to messages."
@@ -322,7 +309,6 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
 
             <Divider className={Margins.bottom16} />
 
-            {/* Auto Encrypt */}
             <FormSwitch
                 title="Auto-Encrypt"
                 description="Encrypts outgoing messages before sending."
@@ -335,7 +321,6 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
 
             <Divider className={Margins.bottom16} />
 
-            {/* Auto Decrypt */}
             <FormSwitch
                 title="Auto-Decrypt"
                 description="Automatically decrypts and displays incoming messages."
@@ -348,7 +333,6 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
 
             <Divider className={Margins.bottom16} />
 
-            {/* Playground */}
             <section className={Margins.bottom16}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
                     <Forms.FormTitle tag="h3" style={{ margin: 0 }}>
@@ -389,7 +373,6 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
                 </div>
             </section>
 
-            {/* Footer */}
             <footer
                 style={{
                     marginTop: "18px",

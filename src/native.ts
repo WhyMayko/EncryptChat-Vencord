@@ -1,8 +1,3 @@
-/*
- * Encrypt Chat - Electron Main Process Native Helper
- * Bypasses Discord renderer CORS & CSP for Inspecttor Server validation API
- */
-
 import { IpcMainInvokeEvent } from "electron";
 
 let cachedToken: { key: string; token: string; until: number } | null = null;

@@ -1,9 +1,3 @@
-/*
- * Encrypt Chat - Vencord Plugin
- * Encrypt and decrypt messages with Inspecttor (Server & Offline), PGP, XOR, Vigenère, Morse Code, Binary, and Funny Texts.
- * Created by Mayko (@whymayko)
- */
-
 import "./styles.css";
 
 import { findGroupChildrenByChildId, NavContextMenuPatchCallback } from "@api/ContextMenu";

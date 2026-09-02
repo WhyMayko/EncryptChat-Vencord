@@ -1,7 +1,3 @@
-/*
- * Encrypt Chat - Settings Definition
- */
-
 import { definePluginSettings } from "@api/Settings";
 import { Button } from "@components/Button";
 import { OptionType } from "@utils/types";

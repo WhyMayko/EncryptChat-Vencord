@@ -1,8 +1,3 @@
-/*
- * Encrypt Chat - Lock Icon Component
- * Perfectly proportioned padlock with rooted shackle hinge animation
- */
-
 import { ChatBarButton, ChatBarButtonFactory } from "@api/ChatButtons";
 import { classNameFactory } from "@utils/css";
 
@@ -28,13 +23,11 @@ export function XorIcon({ isLocked = true, width = 20, height = 20, className, s
             }}
             {...props}
         >
-            {/* Shackle: Left leg anchored deep into y=13 inside the body (top at y=10) */}
             <path
                 className={cl("shackle")}
                 fill="currentColor"
                 d="M6 13V6.5a6 6 0 0 1 12 0v4.5h-3.2V6.5a2.8 2.8 0 0 0-5.6 0V13H6z"
             />
-            {/* Body: Solid rounded padlock body with keyhole */}
             <path
                 className={cl("body")}
                 fill="currentColor"

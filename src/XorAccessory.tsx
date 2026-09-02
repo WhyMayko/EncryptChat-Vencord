@@ -1,8 +1,3 @@
-/*
- * Encrypt Chat - Message Accessory Component
- * Made with 💜 by Mayko (@whymayko)
- */
-
 import { copyToClipboard } from "@utils/clipboard";
 import { Message } from "@vencord/discord-types";
 import { Parser, useEffect, useState } from "@webpack/common";

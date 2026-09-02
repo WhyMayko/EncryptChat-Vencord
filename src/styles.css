@@ -1,9 +1,3 @@
-/*
- * Encrypt Chat - Styles & Animations
- * Made with 💜 by Mayko (@whymayko)
- */
-
-/* 1. Message Accessory Box with Translucent Colored Backgrounds */
 .vc-xor-accessory {
     display: inline-flex;
     flex-direction: column;
@@ -36,13 +30,11 @@
     flex-shrink: 0;
 }
 
-/* Success State: Vibrant Green */
 .vc-xor-success-icon {
     color: var(--text-positive, #23a55a) !important;
     fill: var(--text-positive, #23a55a) !important;
 }
 
-/* Pure White Text for maximum readability on translucent backgrounds */
 .vc-xor-content,
 .vc-xor-content * {
     color: #ffffff !important;
@@ -50,7 +42,6 @@
     font-weight: 500;
 }
 
-/* Error State: Vibrant Red */
 .vc-xor-error-icon {
     color: var(--text-danger, #fa777c) !important;
     fill: var(--text-danger, #fa777c) !important;
@@ -103,7 +94,6 @@
     text-decoration: underline;
 }
 
-/* 2. Chat Bar Lock Icon & Pure Pivot Shackle Animation */
 .vc-xor-icon {
     display: inline-block;
     vertical-align: middle;

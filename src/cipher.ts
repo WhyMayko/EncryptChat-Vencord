@@ -1,9 +1,3 @@
-/*
- * Encrypt Chat - Cipher & Translation Engine
- * Supports: Inspecttor (Server & Offline), PGP (Clean Binary Base64), Discord (39 Styles), Funny Texts, XOR Cipher, Vigenère, Morse Code, Binary, Hexadecimal, Base64, ROT13
- * Made with 💜 by Mayko (@whymayko)
- */
-
 import { deflateSync, inflateSync } from "fflate";
 import * as openpgp from "openpgp";
 
@@ -39,7 +33,6 @@ export type FunnyStyle =
     | "underline";
 
 export type DiscordStyle =
-    // Codeblocks with Syntax Colors
     | "lua"
     | "diff-green"
     | "diff-red"
@@ -64,7 +57,6 @@ export type DiscordStyle =
     | "markdown"
     | "box"
     | "spoiler-box"
-    // Text Formatting & Native Markdown
     | "spoiler"
     | "inline-code"
     | "quote"
@@ -90,19 +82,12 @@ export interface DecryptResult {
 const encoder = new TextEncoder();
 const decoder = new TextDecoder("utf-8", { fatal: false });
 
-/* ==========================================================================
-   High-Performance In-Memory Decryption Cache (0.001ms lookups)
-   ========================================================================== */
 const MAX_CACHE_ENTRIES = 300;
 const decryptionCache = new Map<string, DecryptResult>();
 
 export function clearDecryptionCache() {
     decryptionCache.clear();
 }
-
-/* ==========================================================================
-   1. PGP Engine (Clean Binary Base64 - No Ugly Headers)
-   ========================================================================== */
 
 export async function encryptPgp(text: string, secretWord: string, includePrefix = false): Promise<string> {
     const effectivePass = (secretWord || "").trim();
@@ -159,14 +144,9 @@ export function isPgpToken(str: string): boolean {
     return false;
 }
 
-/* ==========================================================================
-   2. Discord Formatting Engine (38+ Creative Styles)
-   ========================================================================== */
-
 export function encryptDiscord(text: string, style: DiscordStyle = "lua", includePrefix = false): string {
     let result = "";
     switch (style) {
-        // Syntax Highlighted Codeblocks
         case "lua":
             result = `\`\`\`lua\n${text}\n\`\`\``;
             break;
@@ -239,8 +219,6 @@ export function encryptDiscord(text: string, style: DiscordStyle = "lua", includ
         case "spoiler-box":
             result = `||\`\`\`\n${text}\n\`\`\`||`;
             break;
-
-        // Native Discord Formatting
         case "spoiler":
             result = `||${text}||`;
             break;
@@ -293,11 +271,9 @@ export function encryptDiscord(text: string, style: DiscordStyle = "lua", includ
 export function decryptDiscord(formattedText: string): string {
     let cleaned = formattedText.replace(/^\[DISCORD\]\s*/i, "").trim();
 
-    // Spoiler box
     const spoilerBoxMatch = cleaned.match(/^\|\|`{3}(?:[a-zA-Z0-9_-]+)?\s*\n?([\s\S]*?)\n?`{3}\|\|$/);
     if (spoilerBoxMatch) cleaned = spoilerBoxMatch[1].trim();
 
-    // Standard codeblock
     const codeblockMatch = cleaned.match(/^`{3}(?:[a-zA-Z0-9_-]+)?\s*\n?([\s\S]*?)\n?`{3}$/);
     if (codeblockMatch) {
         let inner = codeblockMatch[1];
@@ -308,23 +284,18 @@ export function decryptDiscord(formattedText: string): string {
         return inner.trim();
     }
 
-    // Spoiler
     const spoilerMatch = cleaned.match(/^\|\|([\s\S]+)\|\|$/);
     if (spoilerMatch) return spoilerMatch[1].trim();
 
-    // Inline code
     const inlineMatch = cleaned.match(/^`([^`]+)`$/);
     if (inlineMatch) return inlineMatch[1].trim();
 
-    // Quotes
     if (cleaned.startsWith(">>>")) return cleaned.slice(3).trim();
     if (cleaned.startsWith(">")) return cleaned.replace(/^>\s?/gm, "").trim();
 
-    // Headers & Subtext
     if (/^#{1,3}\s+/.test(cleaned)) return cleaned.replace(/^#{1,3}\s+/gm, "").trim();
     if (cleaned.startsWith("-#")) return cleaned.slice(2).trim();
 
-    // Bold / Italic / Underline / Strike
     const biMatch = cleaned.match(/^\*\*\*([\s\S]+)\*\*\*$/);
     if (biMatch) return biMatch[1].trim();
     const bMatch = cleaned.match(/^\*\*([\s\S]+)\*\*$/);
@@ -336,10 +307,6 @@ export function decryptDiscord(formattedText: string): string {
 
     return cleaned;
 }
-
-/* ==========================================================================
-   3. Base85 Helper
-   ========================================================================== */
 
 const BASE85_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#$%()*+,-./:;=?@[]^_{}";
 const BASE85_LOOKUP = (() => {
@@ -401,10 +368,6 @@ export function base85Decode(str: string): Uint8Array | null {
 
 const toHex = (bytes: Uint8Array) => Array.from(bytes, b => b.toString(16).padStart(2, "0")).join("");
 const fromHex = (hex: string) => Uint8Array.from(hex.match(/.{2}/g)?.map(b => parseInt(b, 16)) || []);
-
-/* ==========================================================================
-   4. Inspecttor Server Engine (Live API + Native Electron IPC Bypass)
-   ========================================================================== */
 
 const INSPECTTOR_SERVER = "https://inspecttor.xyz";
 let cachedApiToken: { key: string; token: string; until: number } | null = null;
@@ -535,10 +498,6 @@ export async function decryptInspecttorServer(
     return decoder.decode(new Uint8Array(decryptedBuffer));
 }
 
-/* ==========================================================================
-   5. Inspecttor Offline Engine (Local Standalone AES-256-GCM + PBKDF2 + Deflate)
-   ========================================================================== */
-
 export async function encryptInspecttorOffline(
     text: string,
     secretWord: string,
@@ -620,10 +579,6 @@ export function isInspecttorToken(str: string): boolean {
     if (!rawBytes || rawBytes.length < 37) return false;
     return rawBytes[0] === 1 || rawBytes[0] === 17 || (rawBytes[0] >> 4 === 1);
 }
-
-/* ==========================================================================
-   6. Funny Texts Engine (12 Styles with Tag-less Auto Detection)
-   ========================================================================== */
 
 const SUPERSCRIPT_MAP: Record<string, string> = {
     a: "ᵃ", b: "ᵇ", c: "ᶜ", d: "ᵈ", e: "ᵉ", f: "ᶠ", g: "ᵍ", h: "ʰ", i: "ⁱ", j: "ʲ",
@@ -899,10 +854,6 @@ export function encryptFunny(text: string, style: FunnyStyle = "superscript", in
     }
 }
 
-/* ==========================================================================
-   7. Vigenère Cipher
-   ========================================================================== */
-
 export function vigenereEncrypt(text: string, key: string, includePrefix = false): string {
     const cleanKey = (key || "").replace(/[^a-zA-Z]/g, "").toUpperCase();
     if (!cleanKey) throw new Error("Secret Word is required for Vigenère encryption.");
@@ -946,10 +897,6 @@ export function vigenereDecrypt(text: string, key: string): string {
     return res;
 }
 
-/* ==========================================================================
-   8. Morse Code Engine
-   ========================================================================== */
-
 const MORSE_MAP: Record<string, string> = {
     A: ".-", B: "-...", C: "-.-.", D: "-..", E: ".", F: "..-.",
     G: "--.", H: "....", I: "..", J: ".---", K: "-.-", L: ".-..",
@@ -992,10 +939,6 @@ export function morseToText(morse: string): string {
         )
         .join(" ");
 }
-
-/* ==========================================================================
-   9. Plain Binary, Hexadecimal, and Base64 Engines
-   ========================================================================== */
 
 export function textToPlainBinary(text: string, includePrefix = false): string {
     const bytes = encoder.encode(text);
@@ -1075,10 +1018,6 @@ function tryTaglessBase64(str: string): string | null {
     return null;
 }
 
-/* ==========================================================================
-   10. ROT13
-   ========================================================================== */
-
 export function rot13(str: string): string {
     const clean = str.replace(/^\[ROT13\]\s*/i, "");
     return clean.replace(/[a-zA-Z]/g, ch => {
@@ -1097,10 +1036,6 @@ export function rot13Encrypt(text: string, includePrefix = false): string {
 export function rot13Decrypt(text: string): string {
     return rot13(text);
 }
-
-/* ==========================================================================
-   11. XOR Cipher Engine (with Secret Word)
-   ========================================================================== */
 
 export function xorBytes(data: Uint8Array, key: Uint8Array): Uint8Array {
     const result = new Uint8Array(data.length);
@@ -1196,10 +1131,6 @@ export function xorDecrypt(cipherText: string, secretWord: string): { success: b
     return { success: true, text: decoder.decode(decryptedBytes) };
 }
 
-/* ==========================================================================
-   12. Unified Encrypt & Auto-Decrypt Functions
-   ========================================================================== */
-
 export async function encryptMessage(
     text: string,
     method: CipherMethod,
@@ -1259,14 +1190,12 @@ export async function decryptMessage(
 
     const trimmed = ciphertext.trim();
 
-    // 0. High-Speed LRU Cache Check (0.001ms)
     const cacheKey = `${secretWord}:${inspecttorAccessKey}:${trimmed}`;
     const cached = decryptionCache.get(cacheKey);
     if (cached) return cached;
 
     let result: DecryptResult | null = null;
 
-    // 1. PGP Message Detection (Clean Base64 or Legacy Armored)
     if (trimmed.startsWith("[PGP]") || isPgpToken(trimmed)) {
         try {
             const dec = await decryptPgp(trimmed, secretWord);
@@ -1276,13 +1205,11 @@ export async function decryptMessage(
         } catch {}
     }
 
-    // 2. Explicit Discord Tag Detection ONLY (Never auto-translates codeblocks/scripts/formatting)
     if (!result && trimmed.startsWith("[DISCORD]")) {
         const dec = decryptDiscord(trimmed);
         result = { success: true, text: dec, method: "discord" };
     }
 
-    // 3. Inspecttor Token Auto-Detection (Server Seed or Offline Standalone)
     if (!result && isInspecttorToken(trimmed)) {
         if (inspecttorAccessKey) {
             try {
@@ -1302,7 +1229,6 @@ export async function decryptMessage(
         }
     }
 
-    // 4. Tag-based Fast Matches
     if (!result && trimmed.startsWith("[INSPECTTOR:OFFLINE]")) {
         try {
             const dec = await decryptInspecttorOffline(trimmed, secretWord);
@@ -1404,16 +1330,16 @@ export async function decryptMessage(
 
     if (!result && trimmed.startsWith("[BINARY]")) {
         const plainBin = plainBinaryToText(trimmed);
-        if (plainBin && plainBin.length > 0) result = { success: true, text: plainBin, method: "binary" };
+        if (plainBin && plainBin.length > 0) {
+            result = { success: true, text: plainBin, method: "binary" };
+        }
     }
 
-    // 5. Tag-less Auto-Detection: Alternating Caps
     if (!result && isAlternatingCaps(trimmed)) {
         const normalized = fromAlternating(trimmed);
         result = { success: true, text: normalized, method: "funny" };
     }
 
-    // 6. Tag-less Auto-Detection: Leet Speak
     if (!result && isLeet(trimmed)) {
         const leetDec = fromLeet(trimmed);
         if (leetDec && leetDec !== trimmed) {
@@ -1421,7 +1347,6 @@ export async function decryptMessage(
         }
     }
 
-    // 7. Tag-less Auto-Detection: Strikethrough / Underline
     if (!result && /\u0336/.test(trimmed)) {
         result = { success: true, text: fromStrikethrough(trimmed), method: "funny" };
     }
@@ -1429,7 +1354,6 @@ export async function decryptMessage(
         result = { success: true, text: fromUnderline(trimmed), method: "funny" };
     }
 
-    // 8. Tag-less Auto-Detection: Zalgo Glitch Text
     if (!result && /[\u0300-\u036f\u1dc0-\u1dff\u20d0-\u20ff]/.test(trimmed)) {
         const zalgoDec = fromZalgo(trimmed);
         if (zalgoDec && zalgoDec !== trimmed) {
@@ -1437,7 +1361,6 @@ export async function decryptMessage(
         }
     }
 
-    // 9. Tag-less Auto-Detection: Superscript
     if (!result && /[ᵃᵇᶜᵈᵉᶠᵍʰⁱʲᵏˡᵐⁿᵒᵖʳˢᵗᵘᵛʷˣʸᶻᴬᴮᴰᴱᴳᴴᴵᴶᴷᴸᴹᴺᴼᴾᴿᵀᵁⱽᵂ⁰¹²³⁴⁵⁶⁷⁸⁹]/.test(trimmed)) {
         const superDec = fromSuperscript(trimmed);
         if (superDec && superDec !== trimmed) {
@@ -1445,7 +1368,6 @@ export async function decryptMessage(
         }
     }
 
-    // 10. Tag-less Auto-Detection: Subscript
     if (!result && /[ₐₑₕᵢⱼₖₗₘₙₒₚᵣₛₜᵤᵥₓ₀₁₂₃₄₅₆₇₈₉]/.test(trimmed)) {
         const subDec = fromSubscript(trimmed);
         if (subDec && subDec !== trimmed) {
@@ -1453,7 +1375,6 @@ export async function decryptMessage(
         }
     }
 
-    // 11. Tag-less Auto-Detection: Bubble Text
     if (!result && /[\u24B6-\u24E9\u2460-\u24EA]/.test(trimmed)) {
         const bubbleDec = fromBubble(trimmed);
         if (bubbleDec && bubbleDec !== trimmed) {
@@ -1461,7 +1382,6 @@ export async function decryptMessage(
         }
     }
 
-    // 12. Tag-less Auto-Detection: Fullwidth
     if (!result && /[\uff01-\uff5e\u3000]/.test(trimmed)) {
         const fwDec = fromFullwidth(trimmed);
         if (fwDec && fwDec !== trimmed) {
@@ -1469,7 +1389,6 @@ export async function decryptMessage(
         }
     }
 
-    // 13. Tag-less Auto-Detection: Small Caps
     if (!result && /[ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘǫʀꜱᴛᴜᴠᴡʏᴢ]/.test(trimmed)) {
         const scDec = fromSmallCaps(trimmed);
         if (scDec && scDec !== trimmed) {
@@ -1477,7 +1396,6 @@ export async function decryptMessage(
         }
     }
 
-    // 14. Tag-less Auto-Detection: Upside Down Unicode
     if (!result && /[\u0250-\u02AF\u2144\u2200\u018E\u2132\u2141\u02D9\u00BF\u00A1]/.test(trimmed)) {
         const udDec = fromUpsideDown(trimmed);
         if (udDec && udDec !== trimmed) {
@@ -1485,7 +1403,6 @@ export async function decryptMessage(
         }
     }
 
-    // 15. Tag-less Auto-Detection: Morse Code
     if (!result && /^[.\-/\s]+$/.test(trimmed) && trimmed.length > 2 && (trimmed.includes(".") || trimmed.includes("-"))) {
         const morseDec = morseToText(trimmed);
         if (morseDec && morseDec.length > 0 && morseDec !== trimmed) {
@@ -1493,7 +1410,6 @@ export async function decryptMessage(
         }
     }
 
-    // 16. Tag-less Auto-Detection: Binary
     if (!result && /^[01]{8}(\s+[01]{8})+$/.test(trimmed)) {
         const plainBin = plainBinaryToText(trimmed);
         if (plainBin && plainBin.length > 0) {
@@ -1501,7 +1417,6 @@ export async function decryptMessage(
         }
     }
 
-    // 17. Tag-less Auto-Detection: Hex
     if (!result && /^[0-9a-fA-F]{2}(\s+[0-9a-fA-F]{2})+$/.test(trimmed)) {
         const hexDec = hexToText(trimmed);
         if (hexDec && hexDec.length > 0) {
@@ -1509,7 +1424,6 @@ export async function decryptMessage(
         }
     }
 
-    // 18. Tag-less Auto-Detection: Base64
     if (!result) {
         const b64Dec = tryTaglessBase64(trimmed);
         if (b64Dec) {
