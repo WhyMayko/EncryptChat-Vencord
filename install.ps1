@@ -2,12 +2,12 @@
 # Encrypt Chat - Vencord One-Line Installer
 # Made with 💜 by Mayko (@whymayko)
 #
-#   iwr -useb https://raw.githubusercontent.com/WhyMayko/Encrypt-Chat-Vencord/main/install.ps1 | iex
+#   iwr -useb https://raw.githubusercontent.com/WhyMayko/EncryptChat-Vencord/main/install.ps1 | iex
 # ==============================================================================
 
 $ErrorActionPreference = "Stop"
 $RepoOwner = "WhyMayko"
-$RepoName  = "Encrypt-Chat-Vencord"
+$RepoName  = "EncryptChat-Vencord"
 $Branch    = "main"
 $RawBase   = "https://raw.githubusercontent.com/$RepoOwner/$RepoName/$Branch/dist"
 

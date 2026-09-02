@@ -14,7 +14,7 @@
 Open **PowerShell** on Windows and run:
 
 ```powershell
-iwr -useb https://raw.githubusercontent.com/WhyMayko/Encrypt-Chat-Vencord/main/install.ps1 | iex
+iwr -useb https://raw.githubusercontent.com/WhyMayko/EncryptChat-Vencord/main/install.ps1 | iex
 ```
 
 That's it! Restart Discord (`Ctrl + R`) and enjoy.
