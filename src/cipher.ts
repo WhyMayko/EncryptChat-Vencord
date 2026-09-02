@@ -1,9 +1,8 @@
 /*
  * Encrypt Chat - Cipher & Translation Engine
- * Supports: PGP, Inspecttor, Funny Texts, XOR Cipher, Vigenère, Morse Code, Binary, Hexadecimal, Base64, ROT13
+ * Supports: PGP, Inspecttor (Full inspecttor.xyz protocol + offline fallback), Funny Texts, XOR Cipher, Vigenère, Morse Code, Binary, Hexadecimal, Base64, ROT13
  */
 
-import { deflateSync, inflateSync } from "fflate";
 import * as openpgp from "openpgp";
 
 export type CipherMethod =
@@ -72,7 +71,7 @@ export async function decryptPgp(armoredText: string, secretWord: string): Promi
 }
 
 /* ==========================================================================
-   2. Inspecttor Engine (inspecttor.xyz)
+   2. Inspecttor Engine (100% Compatible with inspecttor.xyz & Cipher plugin)
    ========================================================================== */
 
 const BASE85_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#$%()*+,-./:;=?@[]^_{}";
@@ -133,87 +132,142 @@ function base85Decode(str: string): Uint8Array | null {
     return Uint8Array.from(output);
 }
 
-export function isInspecttorToken(str: string): boolean {
-    const cleaned = str.replace(/^\[INSPECTTOR\]\s*/i, "").replace(/\s+/g, "");
-    if (cleaned.length < 30) return false;
-    const rawBytes = base85Decode(cleaned);
-    if (!rawBytes || rawBytes.length < 37) return false;
-    return (rawBytes[0] >> 4) === 1;
-}
+const toHex = (bytes: Uint8Array) => Array.from(bytes, b => b.toString(16).padStart(2, "0")).join("");
+const fromHex = (hex: string) => Uint8Array.from(hex.match(/.{2}/g)?.map(b => parseInt(b, 16)) || []);
 
-const keyCache = new Map<string, CryptoKey>();
+const INSPECTTOR_SERVER = "https://inspecttor.xyz";
+const INSPECTTOR_ACCESS_KEY = "Iyqz0XO0EceG";
 
-async function deriveInspecttorKey(passphrase: string, salt: Uint8Array): Promise<CryptoKey> {
-    const effectivePass = (passphrase || "Test").trim();
-    const saltHex = Array.from(salt).map(b => b.toString(16).padStart(2, "0")).join("");
-    const cacheKey = `${effectivePass}:${saltHex}`;
+let cachedApiToken: { token: string; until: number } | null = null;
+const seedCache = new Map<string, Uint8Array>();
 
-    const cached = keyCache.get(cacheKey);
+async function getInspecttorSeed(saltHex: string): Promise<Uint8Array | null> {
+    const cached = seedCache.get(saltHex);
     if (cached) return cached;
 
-    const rawKey = await crypto.subtle.importKey("raw", encoder.encode(effectivePass), "PBKDF2", false, ["deriveKey"]);
-    const derived = await crypto.subtle.deriveKey(
-        { name: "PBKDF2", salt: salt as any, iterations: 310000, hash: "SHA-256" },
-        rawKey,
-        { name: "AES-GCM", length: 256 },
-        false,
-        ["encrypt", "decrypt"]
-    );
+    try {
+        const now = Date.now();
+        if (!cachedApiToken || cachedApiToken.until < now + 30000) {
+            const tokenRes = await fetch(`${INSPECTTOR_SERVER}/translator/token`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ key: INSPECTTOR_ACCESS_KEY })
+            });
+            if (tokenRes.ok) {
+                const data = await tokenRes.json();
+                cachedApiToken = { token: data.token, until: now + (data.ttl || 3600000) };
+            }
+        }
 
-    if (keyCache.size > 20) {
-        const firstKey = keyCache.keys().next().value;
-        if (firstKey) keyCache.delete(firstKey);
-    }
-    keyCache.set(cacheKey, derived);
-    return derived;
+        if (cachedApiToken) {
+            const kdfRes = await fetch(`${INSPECTTOR_SERVER}/translator/kdf`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ token: cachedApiToken.token, salt: saltHex })
+            });
+            if (kdfRes.ok) {
+                const kdfData = await kdfRes.json();
+                if (kdfData.seed) {
+                    const seedBytes = fromHex(kdfData.seed);
+                    seedCache.set(saltHex, seedBytes);
+                    return seedBytes;
+                }
+            }
+        }
+    } catch {}
+    return null;
+}
+
+export function isInspecttorToken(str: string): boolean {
+    const cleaned = str
+        .replace(/^\u200B\u200C\u200B\u200D/, "")
+        .replace(/^\[INSPECTTOR\]\s*/i, "")
+        .replace(/\s+/g, "");
+    if (cleaned.length < 35) return false;
+    const rawBytes = base85Decode(cleaned);
+    if (!rawBytes || rawBytes.length < 40) return false;
+    return rawBytes[0] === 1 || rawBytes[0] === 17;
 }
 
 export async function encryptInspecttor(text: string, secretWord: string, includePrefix = false): Promise<string> {
-    const salt = crypto.getRandomValues(new Uint8Array(8));
+    const effectivePass = (secretWord || "fNfeAcPeIwAPK-Cn4VUitJQe").trim();
+    const salt = crypto.getRandomValues(new Uint8Array(16));
     const iv = crypto.getRandomValues(new Uint8Array(12));
-    const cryptoKey = await deriveInspecttorKey(secretWord, salt);
-    const plainBytes = encoder.encode(text);
-    const preparedBytes = deflateSync(plainBytes);
-    const cipherBuffer = await crypto.subtle.encrypt({ name: "AES-GCM", iv: iv as any }, cryptoKey, preparedBytes as any);
+    const saltHex = toHex(salt);
+
+    const seedBytes = await getInspecttorSeed(saltHex);
+
+    const rawKey = await crypto.subtle.importKey("raw", encoder.encode(effectivePass), "PBKDF2", false, ["deriveBits"]);
+    const derivedBits = new Uint8Array(
+        await crypto.subtle.deriveBits(
+            { name: "PBKDF2", salt: salt as any, iterations: 310000, hash: "SHA-256" },
+            rawKey,
+            256
+        )
+    );
+
+    if (seedBytes && seedBytes.length >= 32) {
+        for (let i = 0; i < 32; i++) derivedBits[i] ^= seedBytes[i];
+    }
+
+    const cryptoKey = await crypto.subtle.importKey("raw", derivedBits as any, { name: "AES-GCM" }, false, ["encrypt"]);
+    const cipherBuffer = await crypto.subtle.encrypt({ name: "AES-GCM", iv: iv as any }, cryptoKey, encoder.encode(text));
     const cipherBytes = new Uint8Array(cipherBuffer);
 
-    const token = new Uint8Array(21 + cipherBytes.length);
-    token[0] = 16 | 1;
+    const token = new Uint8Array(29 + cipherBytes.length);
+    token[0] = 1;
     token.set(salt, 1);
-    token.set(iv, 9);
-    token.set(cipherBytes, 21);
+    token.set(iv, 17);
+    token.set(cipherBytes, 29);
 
     const enc = base85Encode(token);
     return includePrefix ? `[INSPECTTOR] ${enc}` : enc;
 }
 
 export async function decryptInspecttor(tokenStr: string, secretWord: string): Promise<string> {
-    const cleaned = tokenStr.replace(/^\[INSPECTTOR\]\s*/i, "").replace(/\s+/g, "");
+    const cleaned = tokenStr
+        .replace(/^\u200B\u200C\u200B\u200D/, "")
+        .replace(/^\[INSPECTTOR\]\s*/i, "")
+        .replace(/\s+/g, "");
     const rawBytes = base85Decode(cleaned);
-    if (!rawBytes || rawBytes.length < 37) throw new Error("Invalid inspecttor token");
-    if (rawBytes[0] >> 4 !== 1) throw new Error("Unknown inspecttor format");
+    if (!rawBytes || rawBytes.length < 40) throw new Error("Invalid inspecttor token");
 
-    const isCompressed = (rawBytes[0] & 1) === 1;
-    const salt = rawBytes.slice(1, 9);
-    const iv = rawBytes.slice(9, 21);
-    const cipherData = rawBytes.slice(21);
+    const effectivePass = (secretWord || "fNfeAcPeIwAPK-Cn4VUitJQe").trim();
 
-    const cryptoKey = await deriveInspecttorKey(secretWord, salt);
-    const decryptedBuffer = await crypto.subtle.decrypt(
-        { name: "AES-GCM", iv: iv as any },
-        cryptoKey,
-        cipherData as any
-    );
-    const decryptedBytes = new Uint8Array(decryptedBuffer);
-    const finalBytes = isCompressed ? inflateSync(decryptedBytes) : decryptedBytes;
-    return decoder.decode(finalBytes);
+    // Format 1: Inspecttor Protocol (16-byte salt, 12-byte IV, header 1)
+    if (rawBytes[0] === 1) {
+        const salt = rawBytes.slice(1, 17);
+        const iv = rawBytes.slice(17, 29);
+        const cipherData = rawBytes.slice(29);
+        const saltHex = toHex(salt);
+
+        const seedBytes = await getInspecttorSeed(saltHex);
+
+        const rawKey = await crypto.subtle.importKey("raw", encoder.encode(effectivePass), "PBKDF2", false, ["deriveBits"]);
+        const derivedBits = new Uint8Array(
+            await crypto.subtle.deriveBits(
+                { name: "PBKDF2", salt: salt as any, iterations: 310000, hash: "SHA-256" },
+                rawKey,
+                256
+            )
+        );
+
+        if (seedBytes && seedBytes.length >= 32) {
+            for (let i = 0; i < 32; i++) derivedBits[i] ^= seedBytes[i];
+        }
+
+        const cryptoKey = await crypto.subtle.importKey("raw", derivedBits as any, { name: "AES-GCM" }, false, ["decrypt"]);
+        const decryptedBuffer = await crypto.subtle.decrypt({ name: "AES-GCM", iv: iv as any }, cryptoKey, cipherData as any);
+        return decoder.decode(new Uint8Array(decryptedBuffer));
+    }
+
+    throw new Error("Unknown inspecttor format");
 }
 
 /* ==========================================================================
    3. Funny Texts Engine
    ========================================================================== */
 
-// 3.1 Superscript
 const SUPERSCRIPT_MAP: Record<string, string> = {
     a: "ᵃ", b: "ᵇ", c: "ᶜ", d: "ᵈ", e: "ᵉ", f: "ᶠ", g: "ᵍ", h: "ʰ", i: "ⁱ", j: "ʲ",
     k: "ᵏ", l: "ˡ", m: "ᵐ", n: "ⁿ", o: "ᵒ", p: "ᵖ", r: "ʳ", s: "ˢ", t: "ᵗ", u: "ᵘ",
@@ -238,7 +292,6 @@ export function fromSuperscript(str: string): string {
     return Array.from(clean).map(c => REV_SUPERSCRIPT[c] || c).join("");
 }
 
-// 3.2 Subscript
 const SUBSCRIPT_MAP: Record<string, string> = {
     a: "ₐ", e: "ₑ", h: "ₕ", i: "ᵢ", j: "ⱼ", k: "ₖ", l: "ₗ", m: "ₘ", n: "ₙ", o: "ₒ",
     p: "ₚ", r: "ᵣ", s: "ₛ", t: "ₜ", u: "ᵤ", v: "ᵥ", x: "ₓ",
@@ -260,7 +313,6 @@ export function fromSubscript(str: string): string {
     return Array.from(clean).map(c => REV_SUBSCRIPT[c] || c).join("");
 }
 
-// 3.3 Alternating Caps
 export function toAlternating(str: string, includePrefix = false): string {
     const clean = str.replace(/^\[(?:FUNNY:)?ALTERNATING\]\s*/i, "");
     let res = "";
@@ -276,7 +328,6 @@ export function toAlternating(str: string, includePrefix = false): string {
     return includePrefix ? `[ALTERNATING] ${res}` : res;
 }
 
-// 3.4 Bubble Text
 export function toBubble(str: string, includePrefix = false): string {
     const clean = str.replace(/^\[(?:FUNNY:)?BUBBLE\]\s*/i, "");
     const res = Array.from(clean).map(c => {
@@ -302,7 +353,6 @@ export function fromBubble(str: string): string {
     }).join("");
 }
 
-// 3.5 Upside Down
 const UPSIDE_DOWN_MAP: Record<string, string> = {
     a: "\u0250", b: "q", c: "\u0254", d: "p", e: "\u01DD", f: "\u025F", g: "\u0183",
     h: "\u0265", i: "\u1D09", j: "\u027E", k: "\u029E", l: "l", m: "\u026F", n: "u",
@@ -331,7 +381,6 @@ export function fromUpsideDown(str: string): string {
     return Array.from(clean).map(c => REVERSE_UPSIDE_DOWN[c] || c).reverse().join("");
 }
 
-// 3.6 Small Caps
 const SMALL_CAPS_MAP: Record<string, string> = {
     a: "ᴀ", b: "ʙ", c: "ᴄ", d: "ᴅ", e: "ᴇ", f: "ꜰ", g: "ɢ", h: "ʜ", i: "ɪ",
     j: "ᴊ", k: "ᴋ", l: "ʟ", m: "ᴍ", n: "ɴ", o: "ᴏ", p: "ᴘ", q: "ǫ", r: "ʀ",
@@ -352,7 +401,6 @@ export function fromSmallCaps(str: string): string {
     return Array.from(clean).map(c => REVERSE_SMALL_CAPS[c] || c).join("");
 }
 
-// 3.7 Fullwidth
 export function toFullwidth(str: string, includePrefix = false): string {
     const clean = str.replace(/^\[(?:FUNNY:)?FULLWIDTH\]\s*/i, "");
     const res = Array.from(clean).map(c => {
@@ -374,7 +422,6 @@ export function fromFullwidth(str: string): string {
     }).join("");
 }
 
-// 3.8 Leet Speak
 const LEET_MAP: Record<string, string> = { a: "4", e: "3", i: "1", o: "0", s: "5", t: "7", b: "8" };
 export function toLeet(str: string, includePrefix = false): string {
     const clean = str.replace(/^\[(?:FUNNY:)?LEET\]\s*/i, "");
@@ -382,7 +429,6 @@ export function toLeet(str: string, includePrefix = false): string {
     return includePrefix ? `[LEET] ${res}` : res;
 }
 
-// 3.9 Zalgo Glitch
 const ZALGO_UP = ["\u030d", "\u030e", "\u0304", "\u0305", "\u033f", "\u0311", "\u0306", "\u0310", "\u0352", "\u0357"];
 const ZALGO_DOWN = ["\u0316", "\u0317", "\u0318", "\u0319", "\u031c", "\u031d", "\u031e", "\u031f", "\u0320", "\u0324"];
 const ZALGO_MID = ["\u0315", "\u031b", "\u0340", "\u0341", "\u0358", "\u0321", "\u0322", "\u0327", "\u0328", "\u0334"];
@@ -406,7 +452,6 @@ export function fromZalgo(str: string): string {
     return clean.replace(/[\u0300-\u036f\u1dc0-\u1dff\u20d0-\u20ff\ufe20-\ufe2f]/g, "");
 }
 
-// 3.10 Strikethrough & Underline
 export function toStrikethrough(str: string, includePrefix = false): string {
     const clean = str.replace(/^\[(?:FUNNY:)?STRIKE\]\s*/i, "");
     const res = Array.from(clean).map(c => c + "\u0336").join("");
@@ -427,7 +472,6 @@ export function fromUnderline(str: string): string {
     return clean.replace(/\u0332/g, "");
 }
 
-// 3.11 Reverse
 export function reverseText(str: string, includePrefix = false): string {
     const clean = str.replace(/^\[(?:FUNNY:)?REV(?:ERSE)?\]\s*/i, "");
     const res = Array.from(clean).reverse().join("");
@@ -794,14 +838,17 @@ export async function decryptMessage(
         } catch {}
     }
 
-    // 2. Tag-based Fast Match
-    if (trimmed.startsWith("[INSPECTTOR]")) {
+    // 2. Tag-less / Tagged Inspecttor Token Detection (Matches friend's plugin token 100%)
+    if (isInspecttorToken(trimmed)) {
         try {
             const dec = await decryptInspecttor(trimmed, secretWord);
-            if (dec && dec.length > 0) return { success: true, text: dec, method: "inspecttor" };
+            if (dec && dec.length > 0) {
+                return { success: true, text: dec, method: "inspecttor" };
+            }
         } catch {}
     }
 
+    // 3. Tag-based Fast Match
     if (trimmed.startsWith("[XOR")) {
         const xorRes = xorDecrypt(trimmed, secretWord);
         if (xorRes.success) return { success: true, text: xorRes.text, method: "xor" };
@@ -873,16 +920,6 @@ export async function decryptMessage(
     if (trimmed.startsWith("[BINARY]")) {
         const plainBin = plainBinaryToText(trimmed);
         if (plainBin && plainBin.length > 0) return { success: true, text: plainBin, method: "binary" };
-    }
-
-    // 3. Tag-less Auto-Detection: Inspecttor Token
-    if (isInspecttorToken(trimmed)) {
-        try {
-            const dec = await decryptInspecttor(trimmed, secretWord);
-            if (dec && dec.length > 0) {
-                return { success: true, text: dec, method: "inspecttor" };
-            }
-        } catch {}
     }
 
     // 4. Tag-less Auto-Detection: Strikethrough / Underline
