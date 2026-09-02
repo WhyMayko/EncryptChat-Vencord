@@ -3,7 +3,7 @@
  */
 
 import { ChatBarButton, ChatBarButtonFactory } from "@api/ChatButtons";
-import { classNameFactory, classes } from "@utils/css";
+import { classNameFactory } from "@utils/css";
 
 import { settings } from "./settings";
 import { openXorModal } from "./XorModal";
@@ -20,7 +20,7 @@ export function XorIcon({ isLocked = false, className, width = 20, height = 20, 
             width={width}
             height={height}
             viewBox="0 0 24 24"
-            className={classes(cl("lock-icon"), isLocked ? cl("locked") : cl("unlocked"), className)}
+            className={cl("lock-icon", isLocked ? "locked" : "unlocked", className)}
             style={style}
             {...props}
         >
