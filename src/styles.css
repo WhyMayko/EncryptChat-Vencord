@@ -1,86 +1,105 @@
 /*
- * Encrypt Chat Plugin Styles
+ * Encrypt Chat - Styles & Animations
  */
 
-/* Chat Bar Active Toggled State (Discord Green) */
-.vc-xor-button-active,
-.vc-encryption-chat-active {
-    color: var(--green-360, #23a55a) !important;
-}
-
-.vc-xor-button-active svg,
-.vc-xor-button-active path,
-.vc-encryption-chat-active svg,
-.vc-encryption-chat-active path {
-    color: var(--green-360, #23a55a) !important;
-    fill: var(--green-360, #23a55a) !important;
-}
-
-.vc-encryption-chat-icon {
-    scale: 1.085;
-    transition: color 0.15s ease;
-}
-
-/* Decrypted Message Accessory */
+/* 1. Accessory Box Under Messages */
 .vc-xor-accessory {
     color: var(--text-muted);
     margin-top: 0.5em;
-    font-size: 0.95rem;
-    line-height: 1.35rem;
+    font-style: italic;
+    font-weight: 400;
+    line-height: 1.2rem;
     white-space: break-spaces;
-    border-left: 3px solid var(--green-360, #23a55a);
-    padding-left: 10px;
-    padding-top: 2px;
-    padding-bottom: 2px;
-    border-radius: 0 4px 4px 0;
-    background: rgba(35, 165, 90, 0.05);
 }
 
 .vc-xor-accessory-error {
-    border-left-color: var(--status-danger, #f23f43);
-    background: rgba(242, 63, 67, 0.05);
+    color: var(--text-danger, #fa777c);
 }
 
 .vc-xor-accessory-icon {
-    margin-right: 0.35em;
-    vertical-align: -0.15em;
-    display: inline-block;
-    color: var(--green-360, #23a55a);
-}
-
-.vc-xor-accessory-error .vc-xor-accessory-icon {
-    color: var(--status-danger, #f23f43);
+    margin-right: 0.3em;
+    vertical-align: -0.2em;
 }
 
 .vc-xor-content {
-    color: var(--text-normal);
     font-style: normal;
+    color: var(--text-normal);
 }
 
 .vc-xor-error-text {
-    color: var(--status-danger, #f23f43);
     font-style: normal;
-    font-weight: 500;
+    color: var(--text-danger, #fa777c);
 }
 
 .vc-xor-meta {
-    font-size: 12px;
+    font-size: 0.8em;
     color: var(--text-muted);
-    font-style: italic;
+    margin-top: 2px;
     display: inline-block;
-    margin-top: 4px;
 }
 
-/* Dismiss Link */
 .vc-xor-dismiss {
     all: unset;
     cursor: pointer;
     color: var(--text-link);
-    font-style: normal;
-    font-weight: 500;
-    margin-left: 3px;
 }
 
 .vc-xor-dismiss:is(:hover, :focus) {
     text-decoration: underline;
+}
+
+/* 2. Chat Bar Lock Icon & Animation */
+.vc-xor-lock-icon {
+    display: inline-block;
+    vertical-align: middle;
+    color: var(--interactive-normal);
+    transition: color 0.2s ease, transform 0.2s ease, filter 0.2s ease;
+    cursor: pointer;
+}
+
+.vc-xor-chat-btn-wrapper:hover .vc-xor-lock-icon {
+    color: var(--interactive-hover);
+}
+
+.vc-xor-chat-btn-wrapper:active .vc-xor-lock-icon {
+    color: var(--interactive-active);
+    transform: scale(0.92);
+}
+
+/* Shackle Open / Close Animation */
+.vc-xor-shackle {
+    transform-origin: 8px 9px;
+    transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.vc-xor-unlocked .vc-xor-shackle {
+    transform: translateY(-3px) rotate(-14deg);
+}
+
+.vc-xor-locked .vc-xor-shackle {
+    transform: translateY(0) rotate(0deg);
+}
+
+/* Locked / Active State (Discord Green & Spring Scale) */
+.vc-xor-auto-encrypt-active,
+.vc-xor-locked {
+    color: var(--green-360, #23a55a) !important;
+    animation: vc-xor-snap 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.vc-xor-chat-btn-wrapper:hover .vc-xor-auto-encrypt-active {
+    color: var(--green-330, #2dc76d) !important;
+    filter: drop-shadow(0 0 4px rgba(35, 165, 90, 0.4));
+}
+
+@keyframes vc-xor-snap {
+    0% {
+        transform: scale(0.85);
+    }
+    50% {
+        transform: scale(1.15);
+    }
+    100% {
+        transform: scale(1);
+    }
 }
