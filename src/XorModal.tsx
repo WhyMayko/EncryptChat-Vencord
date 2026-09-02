@@ -1,6 +1,6 @@
 /*
  * Encrypt Chat - Settings & Testing Modal
- * Created by Mayko (@whymayko)
+ * Made with 💜 by Mayko (@whymayko)
  */
 
 import { Divider } from "@components/Divider";
@@ -21,7 +21,6 @@ import {
 
 import {
     CipherMethod,
-    decryptMessage,
     encryptMessage,
     FunnyStyle,
     InspecttorMode,
@@ -93,13 +92,10 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
 
     const [testInput, setTestInput] = useState("Hello World");
     const [liveEncrypted, setLiveEncrypted] = useState("");
-    const [liveDecrypted, setLiveDecrypted] = useState("");
-    const [isProcessing, setIsProcessing] = useState(false);
     const [copied, setCopied] = useState(false);
 
     useEffect(() => {
         let isCurrent = true;
-        setIsProcessing(true);
 
         const timer = setTimeout(async () => {
             try {
@@ -113,19 +109,11 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
                     inspecttorAccessKey,
                     inspecttorMode as InspecttorMode
                 );
-                if (!isCurrent) return;
-                setLiveEncrypted(enc);
-
-                const dec = await decryptMessage(enc, secretWord, inspecttorAccessKey);
-                if (!isCurrent) return;
-                setLiveDecrypted(dec.success ? dec.text : `[Error: ${dec.text}]`);
+                if (isCurrent) setLiveEncrypted(enc);
             } catch (err: any) {
                 if (isCurrent) {
                     setLiveEncrypted(`[${err?.message || "Encryption failed"}]`);
-                    setLiveDecrypted("");
                 }
-            } finally {
-                if (isCurrent) setIsProcessing(false);
             }
         }, 150);
 
@@ -160,7 +148,7 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
     };
 
     return (
-        <Modal {...rootProps} title="Encrypt Chat - Settings & Live Testing">
+        <Modal {...rootProps} title="Encrypt Chat - Settings">
             {/* 1. Main Encryption Method */}
             <section className={Margins.bottom16}>
                 <Forms.FormTitle tag="h3">Encryption Method</Forms.FormTitle>
@@ -213,7 +201,7 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
                     <Forms.FormTitle tag="h3">Secret Word / Passphrase</Forms.FormTitle>
                     <TextInput
                         value={secretWord || ""}
-                        placeholder="Enter your secret passphrase..."
+                        placeholder="Enter passphrase..."
                         onChange={(val: string) => {
                             settings.store.secretWord = val;
                         }}
@@ -257,10 +245,10 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
 
             <Divider className={Margins.bottom16} />
 
-            {/* Include Method Prefix Tag Toggle */}
+            {/* Include Method Prefix */}
             <FormSwitch
-                title="Include Method Tag in Messages"
-                description="Add method tags like [PGP] to outgoing messages. Leave off for pure raw ciphertext."
+                title="Include Method Prefix"
+                description="Adds tags like [PGP] to messages."
                 value={includeMethodPrefix}
                 onChange={(val: boolean) => {
                     settings.store.includeMethodPrefix = val;
@@ -270,10 +258,10 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
 
             <Divider className={Margins.bottom16} />
 
-            {/* Auto Encrypt Toggle */}
+            {/* Auto Encrypt */}
             <FormSwitch
-                title="Auto-Encrypt Outgoing Messages"
-                description="Automatically encrypt sent messages. Toggle anytime with the chat bar lock button."
+                title="Auto-Encrypt"
+                description="Encrypts outgoing messages before sending."
                 value={autoEncrypt}
                 onChange={(val: boolean) => {
                     settings.store.autoEncrypt = val;
@@ -283,10 +271,10 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
 
             <Divider className={Margins.bottom16} />
 
-            {/* Auto Decrypt Toggle */}
+            {/* Auto Decrypt */}
             <FormSwitch
-                title="Auto-Translate / Decrypt Incoming Messages"
-                description="Automatically decrypt and display incoming encrypted messages in a stylish green pill directly under the message."
+                title="Auto-Decrypt"
+                description="Automatically decrypts and displays incoming messages."
                 value={autoDecrypt}
                 onChange={(val: boolean) => {
                     settings.store.autoDecrypt = val;
@@ -296,11 +284,11 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
 
             <Divider className={Margins.bottom16} />
 
-            {/* Live Testing Playground */}
+            {/* Playground */}
             <section className={Margins.bottom16}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
                     <Forms.FormTitle tag="h3" style={{ margin: 0 }}>
-                        Live Playground {isProcessing && <span style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: "normal" }}>(updating...)</span>}
+                        Playground
                     </Forms.FormTitle>
                     <Button
                         size={Button.Sizes.TINY}
@@ -329,22 +317,15 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
                     }}
                 >
                     <div style={{ color: "var(--text-muted)", marginBottom: "4px", fontWeight: "bold" }}>
-                        🔒 Output:
+                        Output:
                     </div>
-                    <div style={{ color: "var(--text-positive)", marginBottom: "10px" }}>
+                    <div style={{ color: "var(--text-positive)" }}>
                         {liveEncrypted || "..."}
-                    </div>
-
-                    <div style={{ color: "var(--text-muted)", marginBottom: "4px", fontWeight: "bold" }}>
-                        🔓 Decrypted Preview:
-                    </div>
-                    <div style={{ color: "#ffffff", fontWeight: "500" }}>
-                        {liveDecrypted || "..."}
                     </div>
                 </div>
             </section>
 
-            {/* Signature & Credit Footer */}
+            {/* Footer */}
             <footer
                 style={{
                     marginTop: "18px",
