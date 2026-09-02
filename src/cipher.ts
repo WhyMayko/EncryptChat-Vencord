@@ -1,14 +1,13 @@
 /*
  * Encrypt Chat - Cipher & Translation Engine
- * Supports: Inspecttor Server, Inspecttor Offline, PGP, Funny Texts, XOR Cipher, Vigenère, Morse Code, Binary, Hexadecimal, Base64, ROT13
+ * Supports: Inspecttor (Server & Offline), PGP, Funny Texts, XOR Cipher, Vigenère, Morse Code, Binary, Hexadecimal, Base64, ROT13
  */
 
 import { deflateSync, inflateSync } from "fflate";
 import * as openpgp from "openpgp";
 
 export type CipherMethod =
-    | "inspecttor_server"
-    | "inspecttor_offline"
+    | "inspecttor"
     | "pgp"
     | "funny"
     | "xor"
@@ -18,6 +17,8 @@ export type CipherMethod =
     | "hex"
     | "base64"
     | "rot13";
+
+export type InspecttorMode = "server" | "offline";
 
 export type XorFormat = "binary" | "hex" | "base64";
 
@@ -151,7 +152,7 @@ const serverSeedCache = new Map<string, Uint8Array>();
 
 async function getInspecttorServerSeed(accessKey: string, saltHex: string): Promise<Uint8Array> {
     const cleanKey = (accessKey || "").trim();
-    if (!cleanKey) throw new Error("Inspecttor Access Key is required for Server mode.");
+    if (!cleanKey) throw new Error("Server Access Key is required for Server mode.");
 
     const cacheKey = `${cleanKey}:${saltHex}`;
     const cached = serverSeedCache.get(cacheKey);
@@ -164,7 +165,7 @@ async function getInspecttorServerSeed(accessKey: string, saltHex: string): Prom
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ key: cleanKey })
         });
-        if (tokenRes.status === 401) throw new Error("Invalid Inspecttor Access Key.");
+        if (tokenRes.status === 401) throw new Error("Invalid Server Access Key.");
         if (!tokenRes.ok) throw new Error(`Token request failed (${tokenRes.status})`);
 
         const data = await tokenRes.json();
@@ -179,7 +180,7 @@ async function getInspecttorServerSeed(accessKey: string, saltHex: string): Prom
     if (!kdfRes.ok) throw new Error(`Server seed request failed (${kdfRes.status})`);
 
     const kdfData = await kdfRes.json();
-    if (!kdfData.seed) throw new Error("No seed returned by Inspecttor server.");
+    if (!kdfData.seed) throw new Error("No seed returned by server.");
 
     const seedBytes = fromHex(kdfData.seed);
     serverSeedCache.set(cacheKey, seedBytes);
@@ -353,7 +354,7 @@ export function isInspecttorToken(str: string): boolean {
 
 /* ==========================================================================
    5. Funny Texts Engine (12 Styles)
-   ========================================================================== */
+   ========================================================================= */
 
 const SUPERSCRIPT_MAP: Record<string, string> = {
     a: "ᵃ", b: "ᵇ", c: "ᶜ", d: "ᵈ", e: "ᵉ", f: "ᶠ", g: "ᵍ", h: "ʰ", i: "ⁱ", j: "ʲ",
@@ -878,16 +879,18 @@ export async function encryptMessage(
     xorFormat: XorFormat = "binary",
     includePrefix = false,
     funnyStyle: FunnyStyle = "superscript",
-    inspecttorAccessKey = ""
+    inspecttorAccessKey = "",
+    inspecttorMode: InspecttorMode = "server"
 ): Promise<string> {
     if (!text) return "";
 
     try {
         switch (method) {
-            case "inspecttor_server":
+            case "inspecttor":
+                if (inspecttorMode === "offline") {
+                    return await encryptInspecttorOffline(text, secretWord, includePrefix);
+                }
                 return await encryptInspecttorServer(text, secretWord, inspecttorAccessKey, includePrefix);
-            case "inspecttor_offline":
-                return await encryptInspecttorOffline(text, secretWord, includePrefix);
             case "pgp":
                 return await encryptPgp(text, secretWord, includePrefix);
             case "funny":
@@ -935,20 +938,18 @@ export async function decryptMessage(
 
     // 2. Inspecttor Token Auto-Detection (Server Seed or Offline Standalone)
     if (isInspecttorToken(trimmed)) {
-        // Try Server Mode first if accessKey is provided
         if (inspecttorAccessKey) {
             try {
                 const dec = await decryptInspecttorServer(trimmed, secretWord, inspecttorAccessKey);
                 if (dec && dec.length > 0) {
-                    return { success: true, text: dec, method: "inspecttor_server" };
+                    return { success: true, text: dec, method: "inspecttor" };
                 }
             } catch {}
         }
-        // Try Offline Standalone Mode
         try {
             const dec = await decryptInspecttorOffline(trimmed, secretWord);
             if (dec && dec.length > 0) {
-                return { success: true, text: dec, method: "inspecttor_offline" };
+                return { success: true, text: dec, method: "inspecttor" };
             }
         } catch {}
     }
@@ -957,7 +958,7 @@ export async function decryptMessage(
     if (trimmed.startsWith("[INSPECTTOR:OFFLINE]")) {
         try {
             const dec = await decryptInspecttorOffline(trimmed, secretWord);
-            if (dec && dec.length > 0) return { success: true, text: dec, method: "inspecttor_offline" };
+            if (dec && dec.length > 0) return { success: true, text: dec, method: "inspecttor" };
         } catch {}
     }
 
@@ -965,12 +966,12 @@ export async function decryptMessage(
         if (inspecttorAccessKey) {
             try {
                 const dec = await decryptInspecttorServer(trimmed, secretWord, inspecttorAccessKey);
-                if (dec && dec.length > 0) return { success: true, text: dec, method: "inspecttor_server" };
+                if (dec && dec.length > 0) return { success: true, text: dec, method: "inspecttor" };
             } catch {}
         }
         try {
             const dec = await decryptInspecttorOffline(trimmed, secretWord);
-            if (dec && dec.length > 0) return { success: true, text: dec, method: "inspecttor_offline" };
+            if (dec && dec.length > 0) return { success: true, text: dec, method: "inspecttor" };
         } catch {}
     }
 

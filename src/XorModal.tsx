@@ -21,13 +21,13 @@ import {
     decryptMessage,
     encryptMessage,
     FunnyStyle,
+    InspecttorMode,
     XorFormat
 } from "./cipher";
 import { settings } from "./settings";
 
 const methodOptions = [
-    { label: "Server", value: "inspecttor_server" as CipherMethod },
-    { label: "Offline", value: "inspecttor_offline" as CipherMethod },
+    { label: "Inspecttor", value: "inspecttor" as CipherMethod },
     { label: "PGP", value: "pgp" as CipherMethod },
     { label: "Funny Texts", value: "funny" as CipherMethod },
     { label: "XOR Cipher", value: "xor" as CipherMethod },
@@ -37,6 +37,11 @@ const methodOptions = [
     { label: "Hexadecimal", value: "hex" as CipherMethod },
     { label: "Base64", value: "base64" as CipherMethod },
     { label: "ROT13", value: "rot13" as CipherMethod }
+];
+
+const inspecttorModeOptions = [
+    { label: "Server", value: "server" as InspecttorMode },
+    { label: "Offline", value: "offline" as InspecttorMode }
 ];
 
 const funnyStyleOptions = [
@@ -63,18 +68,20 @@ const xorFormatOptions = [
 function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps }) {
     const {
         method,
-        funnyStyle,
-        secretWord,
+        inspecttorMode,
         inspecttorAccessKey,
+        secretWord,
+        funnyStyle,
         xorFormat,
         includeMethodPrefix,
         autoEncrypt,
         autoDecrypt
     } = settings.use([
         "method",
-        "funnyStyle",
-        "secretWord",
+        "inspecttorMode",
         "inspecttorAccessKey",
+        "secretWord",
+        "funnyStyle",
         "xorFormat",
         "includeMethodPrefix",
         "autoEncrypt",
@@ -99,7 +106,8 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
                     xorFormat as XorFormat,
                     includeMethodPrefix,
                     funnyStyle as FunnyStyle,
-                    inspecttorAccessKey
+                    inspecttorAccessKey,
+                    inspecttorMode as InspecttorMode
                 );
                 if (!isCurrent) return;
                 setLiveEncrypted(enc);
@@ -121,20 +129,28 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
             isCurrent = false;
             clearTimeout(timer);
         };
-    }, [testInput, method, funnyStyle, secretWord, inspecttorAccessKey, xorFormat, includeMethodPrefix]);
+    }, [
+        testInput,
+        method,
+        inspecttorMode,
+        inspecttorAccessKey,
+        secretWord,
+        funnyStyle,
+        xorFormat,
+        includeMethodPrefix
+    ]);
 
     const needsSecretKey =
+        method === "inspecttor" ||
         method === "pgp" ||
-        method === "inspecttor_server" ||
-        method === "inspecttor_offline" ||
         method === "xor" ||
         method === "vigenere";
 
-    const isServerMode = method === "inspecttor_server";
+    const isServerInspecttor = method === "inspecttor" && inspecttorMode === "server";
 
     return (
         <Modal {...rootProps} title="Encrypt Chat - Vencord Settings">
-            {/* Encryption Method */}
+            {/* 1. Main Encryption Method */}
             <section className={Margins.bottom16}>
                 <Forms.FormTitle tag="h3">Encryption Method</Forms.FormTitle>
                 <SearchableSelect
@@ -149,8 +165,25 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
                 />
             </section>
 
-            {/* Server Access Key */}
-            {isServerMode && (
+            {/* 2. Inspecttor Mode (Sub-dropdown when Inspecttor is selected) */}
+            {method === "inspecttor" && (
+                <section className={Margins.bottom16}>
+                    <Forms.FormTitle tag="h3">Inspecttor Mode</Forms.FormTitle>
+                    <SearchableSelect
+                        options={inspecttorModeOptions}
+                        value={inspecttorMode}
+                        placeholder="Select mode"
+                        maxVisibleItems={2}
+                        closeOnSelect={true}
+                        onChange={(val: InspecttorMode) => {
+                            settings.store.inspecttorMode = val;
+                        }}
+                    />
+                </section>
+            )}
+
+            {/* 3. Server Access Key (Only when Inspecttor + Server) */}
+            {isServerInspecttor && (
                 <section className={Margins.bottom16}>
                     <Forms.FormTitle tag="h3">Server Access Key</Forms.FormTitle>
                     <TextInput
@@ -163,7 +196,7 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
                 </section>
             )}
 
-            {/* Secret Word */}
+            {/* 4. Secret Word / Passphrase */}
             {needsSecretKey && (
                 <section className={Margins.bottom16}>
                     <Forms.FormTitle tag="h3">Secret Word / Passphrase</Forms.FormTitle>
@@ -177,7 +210,7 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
                 </section>
             )}
 
-            {/* Funny Text Style */}
+            {/* 5. Funny Text Style (When Funny Texts is selected) */}
             {method === "funny" && (
                 <section className={Margins.bottom16}>
                     <Forms.FormTitle tag="h3">Funny Text Style</Forms.FormTitle>
@@ -194,7 +227,7 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
                 </section>
             )}
 
-            {/* XOR Output Format */}
+            {/* 6. XOR Output Format (When XOR is selected) */}
             {method === "xor" && (
                 <section className={Margins.bottom16}>
                     <Forms.FormTitle tag="h3">XOR Output Format</Forms.FormTitle>

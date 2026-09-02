@@ -13,8 +13,7 @@ export const settings = definePluginSettings({
         type: OptionType.SELECT,
         description: "Encryption and Obfuscation Method",
         options: [
-            { label: "Server", value: "inspecttor_server", default: true },
-            { label: "Offline", value: "inspecttor_offline" },
+            { label: "Inspecttor", value: "inspecttor", default: true },
             { label: "PGP", value: "pgp" },
             { label: "Funny Texts", value: "funny" },
             { label: "XOR Cipher", value: "xor" },
@@ -25,6 +24,24 @@ export const settings = definePluginSettings({
             { label: "Base64", value: "base64" },
             { label: "ROT13", value: "rot13" }
         ] as const
+    },
+    inspecttorMode: {
+        type: OptionType.SELECT,
+        description: "Inspecttor Mode",
+        options: [
+            { label: "Server", value: "server", default: true },
+            { label: "Offline", value: "offline" }
+        ] as const
+    },
+    inspecttorAccessKey: {
+        type: OptionType.STRING,
+        description: "Server Access Key",
+        default: ""
+    },
+    secretWord: {
+        type: OptionType.STRING,
+        description: "Secret Word / Passphrase",
+        default: ""
     },
     funnyStyle: {
         type: OptionType.SELECT,
@@ -43,16 +60,6 @@ export const settings = definePluginSettings({
             { label: "Strikethrough", value: "strikethrough" },
             { label: "Underline", value: "underline" }
         ] as const
-    },
-    secretWord: {
-        type: OptionType.STRING,
-        description: "Secret Word / Passphrase",
-        default: ""
-    },
-    inspecttorAccessKey: {
-        type: OptionType.STRING,
-        description: "Server Access Key",
-        default: ""
     },
     xorFormat: {
         type: OptionType.SELECT,

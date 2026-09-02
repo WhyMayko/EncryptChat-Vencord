@@ -1,6 +1,6 @@
 /*
  * Encrypt Chat - Vencord Plugin
- * Encrypt and decrypt messages with Inspecttor Server, Inspecttor Offline, PGP, XOR, Vigenère, Morse Code, Binary, and Funny Texts.
+ * Encrypt and decrypt messages with Inspecttor (Server & Offline), PGP, XOR, Vigenère, Morse Code, Binary, and Funny Texts.
  */
 
 import "./styles.css";
@@ -15,6 +15,7 @@ import {
     decryptMessage,
     encryptMessage,
     FunnyStyle,
+    InspecttorMode,
     XorFormat
 } from "./cipher";
 import { settings } from "./settings";
@@ -62,7 +63,7 @@ const messageCtxPatch: NavContextMenuPatchCallback = (children, { message }: { m
 
 export default definePlugin({
     name: "EncryptChat",
-    description: "Encrypt and decrypt messages using Inspecttor Server, Inspecttor Offline, PGP, XOR, Vigenère, Morse Code, Binary, and Funny Texts.",
+    description: "Encrypt and decrypt messages using Inspecttor (Server & Offline), PGP, XOR, Vigenère, Morse Code, Binary, and Funny Texts.",
     tags: ["Chat", "Utility", "Security"],
     authors: [
         {
@@ -118,7 +119,8 @@ export default definePlugin({
                 settings.store.xorFormat as XorFormat,
                 settings.store.includeMethodPrefix,
                 settings.store.funnyStyle as FunnyStyle,
-                settings.store.inspecttorAccessKey
+                settings.store.inspecttorAccessKey,
+                settings.store.inspecttorMode as InspecttorMode
             );
 
             if (encrypted) {
