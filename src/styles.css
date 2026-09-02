@@ -1,6 +1,5 @@
 /*
- * Encrypt Chat - Styles
- * Matches Translate plugin styles for 100% native Discord consistency
+ * Encrypt Chat - Styles & Animations
  */
 
 .vc-xor-accessory {
@@ -48,10 +47,41 @@
     text-decoration: underline;
 }
 
-.vc-xor-auto-encrypt {
-    color: var(--green-360) !important;
+/* 2. Lock Shackle Animation & Active Colors */
+.vc-xor-icon {
+    display: inline-block;
+    vertical-align: middle;
+    transition: color 0.2s ease, transform 0.2s ease;
 }
 
-.vc-xor-chat-button {
-    scale: 1.085;
+.vc-xor-shackle {
+    transform-origin: 8px 10px;
+    transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.vc-xor-unlocked .vc-xor-shackle {
+    transform: translateY(-3px) rotate(-22deg);
+}
+
+.vc-xor-locked .vc-xor-shackle {
+    transform: translateY(0) rotate(0deg);
+}
+
+.vc-xor-locked,
+.vc-xor-auto-encrypt {
+    color: var(--green-360, #23a55a) !important;
+    fill: var(--green-360, #23a55a) !important;
+    animation: vc-xor-snap 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes vc-xor-snap {
+    0% {
+        transform: scale(0.9);
+    }
+    50% {
+        transform: scale(1.12);
+    }
+    100% {
+        transform: scale(1);
+    }
 }
