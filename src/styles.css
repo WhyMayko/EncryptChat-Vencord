@@ -1,13 +1,18 @@
 /*
- * Encryption Chat Plugin Styles
+ * Encrypt Chat Plugin Styles
  */
 
 /* Chat Bar Active Toggled State (Discord Green) */
+.vc-xor-button-active,
 .vc-encryption-chat-active {
     color: var(--green-360, #23a55a) !important;
 }
 
+.vc-xor-button-active svg,
+.vc-xor-button-active path,
+.vc-encryption-chat-active svg,
 .vc-encryption-chat-active path {
+    color: var(--green-360, #23a55a) !important;
     fill: var(--green-360, #23a55a) !important;
 }
 
