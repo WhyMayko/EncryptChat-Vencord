@@ -27,9 +27,11 @@ That's it! Restart Discord (`Ctrl + R`) and enjoy.
   - Supports both **Server Mode** (live seed negotiation + native Electron IPC bypass) and **Offline Mode** (zero-network PBKDF2 + AES-256-GCM + Deflate).
   - Seamless two-way decryption with official Inspecttor users.
 - 🛡️ **OpenPGP Clean Standard**: Clean compact binary Base64 PGP without 1990s email armor headers.
-- 🎨 **Discord Formatting Engine (38+ Styles)**:
-  - **Syntax Highlighting & Colored Codeblocks**: Lua, Diff Green (`+ line`), Diff Red (`- line`), ANSI Green, ANSI Red, ANSI Cyan, ANSI Blue, ANSI Yellow, ANSI Pink, ANSI White Bold, ANSI Gray, Python, JavaScript, TypeScript, JSON, CSS, XML/HTML, C++, SQL, YAML, Bash, Markdown, Plain Copyable Box, Hidden Spoiler Box.
-  - **Rich Typography**: Spoilers (`||hidden||`), Inline Code (`` `code` ``), Blockquotes (`> quote`), Multiline Quotes (`>>> text`), Headers (`#`, `##`, `###`), Subtext (`-# tiny gray text`), Bullet Lists, Bold, Italic, Bold-Italic, Underline, Strikethrough.
+- 🎨 **Discord Formatting Engine (Categorized)**:
+  - **Color**: ANSI colors (Green, Red, Cyan, Blue, Yellow, Pink, White Bold, Gray) & Diff colors (`+ green`, `- red`).
+  - **Language Code**: Syntax-highlighted codeblocks (Lua, Python, JS, TS, JSON, CSS, XML, C++, SQL, YAML, Bash, Markdown, Plain Box, Spoiler Box).
+  - **Text Formatting**: Spoilers (`||text||`), Inline Code (`` `code` ``), Quotes (`>`, `>>>`), Bullet Lists (`-`), Bold, Italic, Bold-Italic, Underline, Strikethrough.
+  - **Size & Headers**: Header 1 (`# Large`), Header 2 (`## Medium`), Header 3 (`### Small`), Subtext (`-# Tiny Gray`).
 - 🎭 **12 Funny Text Typography Styles**:
   - Superscript, Subscript, Alternating Caps, Upside Down, Bubble Text, Reverse, Small Caps, Fullwidth, Leet Speak, Zalgo Glitch, Strikethrough, Underline.
 - ⚡ **Ultra-Fast Performance**: Built-in in-memory LRU cache guarantees **0.001ms instantaneous decrypts** with silky 60+ FPS scrolling.

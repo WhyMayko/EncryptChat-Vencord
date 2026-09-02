@@ -48,6 +48,18 @@ export const settings = definePluginSettings({
         hidden: () => true,
         default: ""
     },
+    discordCategory: {
+        type: OptionType.SELECT,
+        description: "Discord Style Category",
+        hidden: () => true,
+        options: [
+            { label: "All Styles", value: "all", default: true },
+            { label: "Color", value: "color" },
+            { label: "Language Code", value: "code" },
+            { label: "Text Formatting", value: "text" },
+            { label: "Size & Headers", value: "size" }
+        ] as const
+    },
     discordStyle: {
         type: OptionType.SELECT,
         description: "Discord Style",

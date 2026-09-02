@@ -32,6 +32,8 @@ export type FunnyStyle =
     | "strikethrough"
     | "underline";
 
+export type DiscordCategory = "all" | "color" | "code" | "text" | "size";
+
 export type DiscordStyle =
     | "lua"
     | "diff-green"

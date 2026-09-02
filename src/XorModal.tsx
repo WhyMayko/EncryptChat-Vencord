@@ -16,6 +16,7 @@ import {
 
 import {
     CipherMethod,
+    DiscordCategory,
     DiscordStyle,
     encryptMessage,
     FunnyStyle,
@@ -43,46 +44,102 @@ const inspecttorModeOptions = [
     { label: "Offline", value: "offline" as InspecttorMode }
 ];
 
-const discordStyleOptions = [
-    { label: "Lua Codeblock (Color)", value: "lua" as DiscordStyle },
-    { label: "Diff Green (+ green lines)", value: "diff-green" as DiscordStyle },
-    { label: "Diff Red (- red lines)", value: "diff-red" as DiscordStyle },
-    { label: "ANSI Green", value: "ansi-green" as DiscordStyle },
-    { label: "ANSI Red", value: "ansi-red" as DiscordStyle },
-    { label: "ANSI Cyan", value: "ansi-cyan" as DiscordStyle },
-    { label: "ANSI Blue", value: "ansi-blue" as DiscordStyle },
-    { label: "ANSI Yellow", value: "ansi-yellow" as DiscordStyle },
-    { label: "ANSI Pink", value: "ansi-pink" as DiscordStyle },
-    { label: "ANSI White Bold", value: "ansi-white" as DiscordStyle },
-    { label: "ANSI Gray", value: "ansi-gray" as DiscordStyle },
-    { label: "Python Codeblock", value: "python" as DiscordStyle },
-    { label: "JavaScript Codeblock", value: "javascript" as DiscordStyle },
-    { label: "TypeScript Codeblock", value: "typescript" as DiscordStyle },
-    { label: "JSON Codeblock", value: "json" as DiscordStyle },
-    { label: "CSS Codeblock", value: "css" as DiscordStyle },
-    { label: "HTML / XML Codeblock", value: "xml" as DiscordStyle },
-    { label: "C++ Codeblock", value: "cpp" as DiscordStyle },
-    { label: "SQL Codeblock", value: "sql" as DiscordStyle },
-    { label: "YAML Codeblock", value: "yaml" as DiscordStyle },
-    { label: "Bash Codeblock", value: "bash" as DiscordStyle },
-    { label: "Markdown Codeblock", value: "markdown" as DiscordStyle },
-    { label: "Plain Box (Copyable)", value: "box" as DiscordStyle },
-    { label: "Spoiler Box (Hidden Codeblock)", value: "spoiler-box" as DiscordStyle },
-    { label: "Spoiler (||hidden||)", value: "spoiler" as DiscordStyle },
-    { label: "Inline Code (`text`)", value: "inline-code" as DiscordStyle },
-    { label: "Quote (> blockquote)", value: "quote" as DiscordStyle },
-    { label: "Multiline Quote (>>> text)", value: "multiquote" as DiscordStyle },
-    { label: "Header 1 (# title)", value: "h1" as DiscordStyle },
-    { label: "Header 2 (## title)", value: "h2" as DiscordStyle },
-    { label: "Header 3 (### title)", value: "h3" as DiscordStyle },
-    { label: "Subtext (-# small text)", value: "subtext" as DiscordStyle },
-    { label: "Bullet List (- item)", value: "list" as DiscordStyle },
-    { label: "Bold (**text**)", value: "bold" as DiscordStyle },
-    { label: "Italic (*text*)", value: "italic" as DiscordStyle },
-    { label: "Bold Italic (***text***)", value: "bold-italic" as DiscordStyle },
-    { label: "Underline (__text__)", value: "underline" as DiscordStyle },
-    { label: "Strikethrough (~~text~~)", value: "strikethrough" as DiscordStyle }
+const categoryOptions = [
+    { label: "All Styles", value: "all" as DiscordCategory },
+    { label: "Color", value: "color" as DiscordCategory },
+    { label: "Language Code", value: "code" as DiscordCategory },
+    { label: "Text Formatting", value: "text" as DiscordCategory },
+    { label: "Size & Headers", value: "size" as DiscordCategory }
 ];
+
+const discordStyleOptionsByCategory: Record<DiscordCategory, { label: string; value: DiscordStyle }[]> = {
+    all: [
+        { label: "[Color] Diff Green (+ green lines)", value: "diff-green" },
+        { label: "[Color] Diff Red (- red lines)", value: "diff-red" },
+        { label: "[Color] ANSI Green", value: "ansi-green" },
+        { label: "[Color] ANSI Red", value: "ansi-red" },
+        { label: "[Color] ANSI Cyan", value: "ansi-cyan" },
+        { label: "[Color] ANSI Blue", value: "ansi-blue" },
+        { label: "[Color] ANSI Yellow", value: "ansi-yellow" },
+        { label: "[Color] ANSI Pink", value: "ansi-pink" },
+        { label: "[Color] ANSI White Bold", value: "ansi-white" },
+        { label: "[Color] ANSI Gray", value: "ansi-gray" },
+        { label: "[Code] Lua Codeblock (Color)", value: "lua" },
+        { label: "[Code] Python Codeblock", value: "python" },
+        { label: "[Code] JavaScript Codeblock", value: "javascript" },
+        { label: "[Code] TypeScript Codeblock", value: "typescript" },
+        { label: "[Code] JSON Codeblock", value: "json" },
+        { label: "[Code] CSS Codeblock", value: "css" },
+        { label: "[Code] HTML / XML Codeblock", value: "xml" },
+        { label: "[Code] C++ Codeblock", value: "cpp" },
+        { label: "[Code] SQL Codeblock", value: "sql" },
+        { label: "[Code] YAML Codeblock", value: "yaml" },
+        { label: "[Code] Bash Codeblock", value: "bash" },
+        { label: "[Code] Markdown Codeblock", value: "markdown" },
+        { label: "[Code] Plain Box (Copyable)", value: "box" },
+        { label: "[Code] Spoiler Box (Hidden Codeblock)", value: "spoiler-box" },
+        { label: "[Text] Spoiler (||hidden||)", value: "spoiler" },
+        { label: "[Text] Inline Code (`text`)", value: "inline-code" },
+        { label: "[Text] Quote (> blockquote)", value: "quote" },
+        { label: "[Text] Multiline Quote (>>> text)", value: "multiquote" },
+        { label: "[Text] Bullet List (- item)", value: "list" },
+        { label: "[Text] Bold (**text**)", value: "bold" },
+        { label: "[Text] Italic (*text*)", value: "italic" },
+        { label: "[Text] Bold Italic (***text***)", value: "bold-italic" },
+        { label: "[Text] Underline (__text__)", value: "underline" },
+        { label: "[Text] Strikethrough (~~text~~)", value: "strikethrough" },
+        { label: "[Size] Header 1 (# Large)", value: "h1" },
+        { label: "[Size] Header 2 (## Medium)", value: "h2" },
+        { label: "[Size] Header 3 (### Small)", value: "h3" },
+        { label: "[Size] Subtext (-# Tiny Gray)", value: "subtext" }
+    ],
+    color: [
+        { label: "Diff Green (+ green lines)", value: "diff-green" },
+        { label: "Diff Red (- red lines)", value: "diff-red" },
+        { label: "ANSI Green", value: "ansi-green" },
+        { label: "ANSI Red", value: "ansi-red" },
+        { label: "ANSI Cyan", value: "ansi-cyan" },
+        { label: "ANSI Blue", value: "ansi-blue" },
+        { label: "ANSI Yellow", value: "ansi-yellow" },
+        { label: "ANSI Pink", value: "ansi-pink" },
+        { label: "ANSI White Bold", value: "ansi-white" },
+        { label: "ANSI Gray", value: "ansi-gray" }
+    ],
+    code: [
+        { label: "Lua Codeblock (Color)", value: "lua" },
+        { label: "Python Codeblock", value: "python" },
+        { label: "JavaScript Codeblock", value: "javascript" },
+        { label: "TypeScript Codeblock", value: "typescript" },
+        { label: "JSON Codeblock", value: "json" },
+        { label: "CSS Codeblock", value: "css" },
+        { label: "HTML / XML Codeblock", value: "xml" },
+        { label: "C++ Codeblock", value: "cpp" },
+        { label: "SQL Codeblock", value: "sql" },
+        { label: "YAML Codeblock", value: "yaml" },
+        { label: "Bash Codeblock", value: "bash" },
+        { label: "Markdown Codeblock", value: "markdown" },
+        { label: "Plain Box (Copyable)", value: "box" },
+        { label: "Spoiler Box (Hidden Codeblock)", value: "spoiler-box" }
+    ],
+    text: [
+        { label: "Spoiler (||hidden||)", value: "spoiler" },
+        { label: "Inline Code (`text`)", value: "inline-code" },
+        { label: "Quote (> blockquote)", value: "quote" },
+        { label: "Multiline Quote (>>> text)", value: "multiquote" },
+        { label: "Bullet List (- item)", value: "list" },
+        { label: "Bold (**text**)", value: "bold" },
+        { label: "Italic (*text*)", value: "italic" },
+        { label: "Bold Italic (***text***)", value: "bold-italic" },
+        { label: "Underline (__text__)", value: "underline" },
+        { label: "Strikethrough (~~text~~)", value: "strikethrough" }
+    ],
+    size: [
+        { label: "Header 1 (# Large)", value: "h1" },
+        { label: "Header 2 (## Medium)", value: "h2" },
+        { label: "Header 3 (### Small)", value: "h3" },
+        { label: "Subtext (-# Tiny Gray)", value: "subtext" }
+    ]
+};
 
 const funnyStyleOptions = [
     { label: "Superscript Top", value: "superscript" as FunnyStyle },
@@ -118,6 +175,7 @@ export function UniversalSettingsView({ closePluginSettings }: { closePluginSett
         inspecttorMode,
         inspecttorAccessKey,
         secretWord,
+        discordCategory,
         discordStyle,
         funnyStyle,
         xorFormat,
@@ -129,6 +187,7 @@ export function UniversalSettingsView({ closePluginSettings }: { closePluginSett
         "inspecttorMode",
         "inspecttorAccessKey",
         "secretWord",
+        "discordCategory",
         "discordStyle",
         "funnyStyle",
         "xorFormat",
@@ -175,6 +234,7 @@ export function UniversalSettingsView({ closePluginSettings }: { closePluginSett
         inspecttorMode,
         inspecttorAccessKey,
         secretWord,
+        discordCategory,
         discordStyle,
         funnyStyle,
         xorFormat,
@@ -195,6 +255,9 @@ export function UniversalSettingsView({ closePluginSettings }: { closePluginSett
         setCopied(true);
         setTimeout(() => setCopied(false), 1800);
     };
+
+    const currentCategory = (discordCategory as DiscordCategory) || "all";
+    const currentStyleOptions = discordStyleOptionsByCategory[currentCategory] || discordStyleOptionsByCategory.all;
 
     return (
         <div className="vc-encrypt-chat-settings-view">
@@ -255,19 +318,41 @@ export function UniversalSettingsView({ closePluginSettings }: { closePluginSett
             )}
 
             {method === "discord" && (
-                <section className={Margins.bottom16}>
-                    <Forms.FormTitle tag="h3">Discord Style</Forms.FormTitle>
-                    <SearchableSelect
-                        options={discordStyleOptions}
-                        value={discordStyle}
-                        placeholder="Select style"
-                        maxVisibleItems={6}
-                        closeOnSelect={true}
-                        onChange={(val: DiscordStyle) => {
-                            settings.store.discordStyle = val;
-                        }}
-                    />
-                </section>
+                <>
+                    <section className={Margins.bottom16}>
+                        <Forms.FormTitle tag="h3">Discord Category</Forms.FormTitle>
+                        <SearchableSelect
+                            options={categoryOptions}
+                            value={currentCategory}
+                            placeholder="Select category"
+                            maxVisibleItems={5}
+                            closeOnSelect={true}
+                            onChange={(val: DiscordCategory) => {
+                                settings.store.discordCategory = val;
+                                if (val !== "all") {
+                                    const available = discordStyleOptionsByCategory[val];
+                                    if (!available.some(opt => opt.value === settings.store.discordStyle)) {
+                                        settings.store.discordStyle = available[0].value;
+                                    }
+                                }
+                            }}
+                        />
+                    </section>
+
+                    <section className={Margins.bottom16}>
+                        <Forms.FormTitle tag="h3">Discord Style</Forms.FormTitle>
+                        <SearchableSelect
+                            options={currentStyleOptions}
+                            value={discordStyle}
+                            placeholder="Select style"
+                            maxVisibleItems={6}
+                            closeOnSelect={true}
+                            onChange={(val: DiscordStyle) => {
+                                settings.store.discordStyle = val;
+                            }}
+                        />
+                    </section>
+                </>
             )}
 
             {method === "funny" && (
