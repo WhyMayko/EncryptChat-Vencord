@@ -1,5 +1,6 @@
 /*
  * Encrypt Chat - Styles & Animations
+ * Created by Mayko (@whymayko)
  */
 
 /* 1. Message Accessory Box with Translucent Colored Backgrounds */
@@ -67,12 +68,29 @@
     color: rgba(255, 255, 255, 0.65) !important;
     margin-top: 4px;
     font-style: italic;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.vc-xor-copy-btn {
+    all: unset;
+    cursor: pointer;
+    color: #00a8fc !important;
+    font-style: normal;
+    transition: opacity 0.15s ease;
+}
+
+.vc-xor-copy-btn:is(:hover, :focus) {
+    text-decoration: underline;
+    opacity: 0.85;
 }
 
 .vc-xor-dismiss {
     all: unset;
     cursor: pointer;
     color: #00a8fc !important;
+    font-style: normal;
 }
 
 .vc-xor-dismiss:is(:hover, :focus) {

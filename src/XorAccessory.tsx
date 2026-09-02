@@ -1,7 +1,9 @@
 /*
  * Encrypt Chat - Message Accessory Component
+ * Created by Mayko (@whymayko)
  */
 
+import { copyToClipboard } from "@utils/clipboard";
 import { Message } from "@vencord/discord-types";
 import { Parser, useEffect, useState } from "@webpack/common";
 
@@ -24,6 +26,29 @@ export function getMessageContent(message: Message): string {
         message.messageSnapshots?.[0]?.message.content ||
         message.embeds?.find(embed => embed.type === "auto_moderation_message")?.rawDescription ||
         ""
+    );
+}
+
+function CopyButton({ text }: { text: string }) {
+    const [copied, setCopied] = useState(false);
+
+    const onCopy = (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        copyToClipboard(text);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1800);
+    };
+
+    return (
+        <button
+            onClick={onCopy}
+            className="vc-xor-copy-btn"
+            type="button"
+            title="Copy plain text to clipboard"
+        >
+            {copied ? "Copied! ✓" : "Copy"}
+        </button>
     );
 }
 
@@ -123,7 +148,7 @@ export function XorAccessory({ message }: { message: Message }) {
                 </span>
             </div>
             <div className="vc-xor-meta">
-                {methodDisplay} • <Dismiss onDismiss={() => setDecrypted(undefined)} />
+                {methodDisplay} • <CopyButton text={decrypted.text} /> • <Dismiss onDismiss={() => setDecrypted(undefined)} />
             </div>
         </div>
     );

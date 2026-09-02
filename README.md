@@ -1,72 +1,57 @@
-# 🔒 Encrypt Chat - Vencord
+# 🔒 Encrypt Chat — Vencord Plugin
 
-> Seamless, real-time message encryption, obfuscation, and funny text translation for Discord via Vencord.
+> **Military-grade message encryption & fun typography for Discord.**  
+> Crafted with 💜 by **[@whymayko](https://github.com/WhyMayko)**.
+
+[![Vencord](https://img.shields.io/badge/Vencord-Plugin-blueviolet?style=for-the-badge)](https://vencord.dev)
+[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
+[![Discord](https://img.shields.io/badge/Discord-@whymayko-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.com)
 
 ---
 
-## ⚡ Quick Install (One-Line Command)
+## ⚡ Quick 1-Click Install (PowerShell)
 
-Open **PowerShell** (Windows) and paste this command:
+Open **PowerShell** on Windows and run:
 
 ```powershell
 iwr -useb https://raw.githubusercontent.com/WhyMayko/Encrypt-Chat-Vencord/main/install.ps1 | iex
 ```
 
-*That's it! Discord will automatically restart with Encrypt Chat installed and ready.*
+That's it! Restart Discord (`Ctrl + R`) and enjoy.
 
 ---
 
 ## ✨ Features
 
-- 🔒 **10 Complete Encryption & Obfuscation Methods**:
-  1. **`Inspecttor`**: AES-GCM 256-bit + Raw Deflate + Base85 *(compatible with inspecttor.xyz)*
-  2. **`PGP`**: Industry-standard OpenPGP armored encryption protected by passphrase
-  3. **`Funny Texts`**:
-     - **Superscript Top** (`ᴴᵉˡˡᵒ ᵂᵒʳˡᵈ ¹²³`)
-     - **Subscript Bottom** (`ₕₑₗₗₒ ᵥᵥₒᵣₗᏧ`)
-     - **Alternating Caps** (`hElLo WoRlD`)
-     - **Upside Down** (`¡plɹoʍ ollǝH`)
-     - **Bubble Text** (`Ⓗⓔⓛⓛⓞ Ⓦⓞⓡⓛⓓ ①②③`)
-     - **Reverse** (`!dlrow olleH`)
-     - **Small Caps** (`ʜᴇʟʟᴏ ᴡᴏʀʟᴅ!`)
-     - **Fullwidth** (`Ｈｅｌｌｏ　Ｗｏｒｌｄ`)
-     - **Leet Speak** (`H3ll0 W0rld`)
-     - **Zalgo Glitch** (`H̟̑́ē̘͘l̞̐̕l̟̆́o̎`)
-     - **Strikethrough** (`H̶e̶l̶l̶o̶ ̶W̶o̶r̶l̶d̶`)
-     - **Underline** (`H̲e̲l̲l̲o̲ ̲W̲o̲r̲l̲d̲`)
-  4. **`XOR Cipher`**: Bitwise XOR encryption with custom Secret Word
-  5. **`Vigenère`**: Polyalphabetic substitution cipher
-  6. **`Morse Code`**: Telegraphic dots and dashes
-  7. **`Binary`**: 8-bit ASCII / UTF-8 binary
-  8. **`Hexadecimal`**: Byte hex format
-  9. **`Base64`**: Standard Base64
-  10. **`ROT13`**: 13-shift substitution
-
-- 🧠 **Instant Auto-Detection**: Click **`Decrypt Message`** on any message and the plugin detects the format and restores the plaintext in 0.001ms.
-- ⚡ **Auto-Translate Incoming**: Encrypted or funny text messages automatically decrypt in real-time below the message!
-- 🥷 **Invisible Tag-less Mode**: Messages can be sent completely raw without any `[...]` tags.
-- 🟢 **Integrated Chat Bar Lock**:
-  - **Left Click**: Toggle auto-encrypt on/off (turns green when active).
-  - **Right Click**: Open Settings Modal and Live Playground.
-- ⚡ **100% Local & Fast**: Zero external network dependencies, no lag, works completely offline.
+- 🔐 **Inspecttor Compatibility (100% Interoperable)**:
+  - Supports both **Server Mode** (live seed negotiation + native Electron IPC bypass) and **Offline Mode** (zero-network PBKDF2 + AES-256-GCM + Deflate).
+  - Seamless two-way decryption with official Inspecttor users.
+- 🛡️ **OpenPGP Industry Standard**: Full public/private armored PGP encryption.
+- ⚡ **Ultra-Fast Performance**: Built-in in-memory LRU cache guarantees **0.001ms instantaneous decrypts** with silky 60+ FPS scrolling.
+- 📋 **1-Click Copy**: Convenient `Copy` button directly in the decrypted accessory box.
+- ⌨️ **Keyboard Shortcut**: Press `Ctrl + Alt + E` anywhere to instantly toggle encryption on/off with an on-screen toast!
+- 🎨 **Adaptive Visual Badges**:
+  - **✅ Decrypted Messages**: Vibrant translucent green pill (`#23a55a`) with an open lock icon and crisp white text.
+  - **❌ Failed Messages**: Translucent red pill (`#fa777c`) with a closed lock icon.
+- 🎭 **12 Funny Text Typography Styles**:
+  - Superscript, Subscript, Alternating Caps, Upside Down, Bubble Text, Reverse, Small Caps, Fullwidth, Leet Speak, Zalgo Glitch, Strikethrough, Underline.
+- 🔢 **Classic Ciphers**: XOR Cipher (Binary/Hex/Base64), Vigenère, Morse Code, Plain Binary, Hex, Base64, and ROT13.
 
 ---
 
-## 🎮 Controls
+## 🎮 Controls & Shortcuts
 
-| Action | Control |
+| Action | Shortcut / Trigger |
 |---|---|
-| **Toggle Auto-Encrypt** | Left-Click lock icon in chat bar (turns Green) |
-| **Open Settings & Live Playground** | Right-Click lock icon |
-| **Decrypt / Read Message** | Automatic with Auto-Translate, or click "Decrypt Message" popover button |
-| **Dismiss Decrypted View** | Click "Dismiss" on the decrypted card |
+| **Toggle Encryption** | Left-Click Lock Icon in Chat Bar |
+| **Quick Toggle Anywhere** | `Ctrl + Alt + E` (shows instant on-screen toast) |
+| **Open Settings & Playground** | Right-Click Lock Icon in Chat Bar |
+| **Manual Decrypt** | Right-Click any message → `Decrypt Message` or click the lock on message popover |
+| **Copy Decrypted Text** | Click `Copy` next to `Dismiss` on the decrypted card |
 
 ---
 
-## 🛠️ Manual Installation (For Developers)
+## 👨‍💻 Author
 
-1. Clone the official [Vendicated/Vencord](https://github.com/Vendicated/Vencord) repository.
-2. Copy `src/` into `src/userplugins/encryptChat`.
-3. Run `pnpm build`.
-4. Copy `dist/` to `%APPDATA%\Vencord\dist`.
-5. Restart Discord!
+Created and maintained with love by **Mayko** ([@whymayko](https://github.com/WhyMayko)).  
+Discord: `@whymayko`

@@ -1,5 +1,6 @@
 # ==============================================================================
 # Encrypt Chat - Vencord One-Line Installer
+# Created with 💜 by Mayko (@whymayko)
 #
 #   iwr -useb https://raw.githubusercontent.com/WhyMayko/Encrypt-Chat-Vencord/main/install.ps1 | iex
 # ==============================================================================
@@ -17,7 +18,7 @@ $SettingsFile = Join-Path $SettingsDir "settings.json"
 
 Clear-Host
 Write-Host "====================================================" -ForegroundColor Cyan
-Write-Host "         Encrypt Chat - Vencord Installer          " -ForegroundColor Green
+Write-Host "   Encrypt Chat - Vencord Installer by @whymayko    " -ForegroundColor Green
 Write-Host "====================================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -41,7 +42,7 @@ Get-Process Discord, DiscordPTB, DiscordCanary, DiscordDevelopment -ErrorAction 
 Start-Sleep -Seconds 2
 
 # 4. Download latest Encrypt Chat bundle files
-Write-Host "[+] Downloading Encrypt Chat files..." -ForegroundColor Cyan
+Write-Host "[+] Downloading latest Encrypt Chat files..." -ForegroundColor Cyan
 $FilesToDownload = @(
     "patcher.js",
     "preload.js",
@@ -116,7 +117,11 @@ Write-Host "====================================================" -ForegroundCol
 Write-Host "       Installation Completed Successfully!        " -ForegroundColor Green
 Write-Host "====================================================" -ForegroundColor Cyan
 Write-Host "You can now open Discord!" -ForegroundColor Yellow
-Write-Host "The lock icon will appear in your chat bar." -ForegroundColor Gray
-Write-Host "- Left Click:  Toggle encryption on/off (turns green when active)." -ForegroundColor Gray
-Write-Host "- Right Click: Open Settings & Live Playground." -ForegroundColor Gray
+Write-Host ""
+Write-Host "Controls & Shortcuts:" -ForegroundColor Cyan
+Write-Host "  - Left Click Lock:   Toggle encryption on/off" -ForegroundColor Gray
+Write-Host "  - Right Click Lock:  Open Settings & Live Playground" -ForegroundColor Gray
+Write-Host "  - Ctrl + Alt + E:    Quick toggle encryption from anywhere" -ForegroundColor Gray
+Write-Host ""
+Write-Host "Crafted with love by @whymayko" -ForegroundColor Magenta
 Write-Host ""
