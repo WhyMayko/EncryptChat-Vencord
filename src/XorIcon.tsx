@@ -1,5 +1,6 @@
 /*
  * Encrypt Chat - Chat Bar Lock Icon Component
+ * Proportional lock with connected shackle and smooth pivot animation
  */
 
 import { ChatBarButton, ChatBarButtonFactory } from "@api/ChatButtons";
@@ -27,19 +28,19 @@ export function XorIcon({ isLocked = false, width = 20, height = 20, className, 
             }}
             {...props}
         >
-            {/* Animated Shackle (Pivots from left at 8px, 10px) */}
+            {/* Shackle: Extends into y=10.5 to connect seamlessly with the body */}
             <path
                 className={cl("shackle")}
                 fill="currentColor"
-                d="M8 10V6.5a4 4 0 0 1 8 0V10h-2V6.5a2 2 0 0 0-4 0V10H8z"
+                d="M7 10.5V6.5a5 5 0 0 1 10 0v4h-2.2V6.5a2.8 2.8 0 0 0-5.6 0v4H7z"
             />
-            {/* Lock Body with Keyhole cutout */}
+            {/* Body: Rounded rect with keyhole */}
             <path
                 className={cl("body")}
                 fill="currentColor"
                 fillRule="evenodd"
                 clipRule="evenodd"
-                d="M5 10h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2zm7 3a1.5 1.5 0 0 0-1.5 1.5c0 .54.29.98.7 1.25L10.5 18h3l-.7-2.25c.41-.27.7-.71.7-1.25A1.5 1.5 0 0 0 12 13z"
+                d="M5 10a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2H5zm7 3a1.5 1.5 0 0 1 1.5 1.5c0 .5-.26.96-.65 1.22l.65 2.28h-3l.65-2.28a1.5 1.5 0 0 1-.65-1.22A1.5 1.5 0 0 1 12 13z"
             />
         </svg>
     );

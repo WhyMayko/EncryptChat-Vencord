@@ -2,19 +2,35 @@
  * Encrypt Chat - Styles & Animations
  */
 
-/* 1. Message Accessory Box */
+/* 1. Message Accessory Box with Translucent Colored Backgrounds */
 .vc-xor-accessory {
-    color: var(--text-muted);
-    margin-top: 0.5em;
+    display: inline-flex;
+    flex-direction: column;
+    margin-top: 6px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    background-color: rgba(35, 165, 90, 0.12);
+    border: 1px solid rgba(35, 165, 90, 0.28);
     font-size: 0.9375rem;
     line-height: 1.35rem;
-    white-space: break-spaces;
+    max-width: 100%;
+}
+
+.vc-xor-accessory-error {
+    background-color: rgba(250, 119, 124, 0.12);
+    border: 1px solid rgba(250, 119, 124, 0.28);
+}
+
+.vc-xor-accessory-main {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    word-break: break-word;
 }
 
 .vc-xor-accessory-icon {
     display: inline-block;
-    vertical-align: -2px;
-    margin-right: 6px;
+    vertical-align: middle;
     flex-shrink: 0;
 }
 
@@ -30,10 +46,6 @@
 }
 
 /* Error State: Vibrant Red */
-.vc-xor-accessory-error {
-    color: var(--text-danger, #fa777c);
-}
-
 .vc-xor-error-icon {
     color: var(--text-danger, #fa777c) !important;
     fill: var(--text-danger, #fa777c) !important;
@@ -45,10 +57,9 @@
 }
 
 .vc-xor-meta {
-    font-size: 0.8em;
+    font-size: 0.75rem;
     color: var(--text-muted);
-    margin-top: 3px;
-    display: inline-block;
+    margin-top: 4px;
     font-style: italic;
 }
 
@@ -70,12 +81,12 @@
 }
 
 .vc-xor-shackle {
-    transform-origin: 8px 10px;
+    transform-origin: 7px 10.5px;
     transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .vc-xor-unlocked .vc-xor-shackle {
-    transform: translateY(-3px) rotate(-22deg);
+    transform: translateY(-2.5px) rotate(-20deg);
 }
 
 .vc-xor-locked .vc-xor-shackle {

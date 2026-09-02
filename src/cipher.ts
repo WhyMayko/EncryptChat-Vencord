@@ -234,7 +234,8 @@ export async function encryptInspecttorServer(
     token.set(cipherBytes, 29);
 
     const enc = base85Encode(token);
-    return includePrefix ? `[INSPECTTOR] ${enc}` : enc;
+    const payload = `\u200B\u200C\u200B\u200D${enc}`;
+    return includePrefix ? `[INSPECTTOR] ${payload}` : payload;
 }
 
 export async function decryptInspecttorServer(
