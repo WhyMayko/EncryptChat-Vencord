@@ -1,5 +1,6 @@
 /*
- * Encrypt Chat - Chat Bar Lock Icon Component with Smooth Lock Animation
+ * Encrypt Chat - Chat Bar Lock Icon Component
+ * Follows the exact structure of TranslateIcon for 100% native Discord styling
  */
 
 import { ChatBarButton, ChatBarButtonFactory } from "@api/ChatButtons";
@@ -14,39 +15,23 @@ export interface XorIconProps extends React.SVGProps<SVGSVGElement> {
     isLocked?: boolean;
 }
 
-export function XorIcon({ isLocked = false, className, width = 20, height = 20, style, ...props }: XorIconProps) {
+const LOCKED_PATH = "M12 2C9.243 2 7 4.243 7 7V10H6C4.897 10 4 10.897 4 12V20C4 21.103 4.897 22 6 22H18C19.103 22 20 21.103 20 20V12C20 10.897 19.103 10 18 10H17V7C17 4.243 14.757 2 12 2ZM9 7C9 5.346 10.346 4 12 4C13.654 4 15 5.346 15 7V10H9V7ZM12 14C11.171 14 10.5 14.671 10.5 15.5C10.5 16.091 10.846 16.598 11.344 16.837L10.75 19H13.25L12.656 16.837C13.154 16.598 13.5 16.091 13.5 15.5C13.5 14.671 12.829 14 12 14Z";
+const UNLOCKED_PATH = "M18 10H17V7C17 4.243 14.757 2 12 2C9.243 2 7 4.243 7 7V8H9V7C9 5.346 10.346 4 12 4C13.654 4 15 5.346 15 7V10H6C4.897 10 4 10.897 4 12V20C4 21.103 4.897 22 6 22H18C19.103 22 20 21.103 20 20V12C20 10.897 19.103 10 18 10ZM12 14C11.171 14 10.5 14.671 10.5 15.5C10.5 16.091 10.846 16.598 11.344 16.837L10.75 19H13.25L12.656 16.837C13.154 16.598 13.5 16.091 13.5 15.5C13.5 14.671 12.829 14 12 14Z";
+
+export function XorIcon({ isLocked = true, width = 24, height = 24, className, ...props }: XorIconProps) {
     return (
         <svg
             width={width}
             height={height}
             viewBox="0 0 24 24"
-            className={cl("lock-icon", isLocked ? "locked" : "unlocked", className)}
-            style={style}
+            className={cl("icon", className)}
             {...props}
         >
-            {/* Lock Shackle (Animated Top Loop) */}
             <path
-                className={cl("shackle")}
                 fill="currentColor"
                 fillRule="evenodd"
                 clipRule="evenodd"
-                d="M7 6.5C7 3.73858 9.23858 1.5 12 1.5C14.7614 1.5 17 3.73858 17 6.5V9H15V6.5C15 4.84315 13.6569 3.5 12 3.5C10.3431 3.5 9 4.84315 9 6.5V9H7V6.5Z"
-            />
-            {/* Lock Body */}
-            <rect
-                className={cl("body")}
-                x="4.5"
-                y="8.5"
-                width="15"
-                height="13"
-                rx="3"
-                fill="currentColor"
-            />
-            {/* Keyhole */}
-            <circle cx="12" cy="14" r="1.5" fill="var(--background-secondary, #2b2d31)" />
-            <path
-                d="M11.3 14.5L11 18H13L12.7 14.5H11.3Z"
-                fill="var(--background-secondary, #2b2d31)"
+                d={isLocked ? LOCKED_PATH : UNLOCKED_PATH}
             />
         </svg>
     );
@@ -67,15 +52,12 @@ export const XorChatBarIcon: ChatBarButtonFactory = () => {
                 openXorModal();
             }}
             buttonProps={{
-                "aria-label": "Encrypt Chat",
-                className: cl("chat-btn-wrapper")
+                "aria-label": "Encrypt Chat"
             }}
         >
             <XorIcon
                 isLocked={autoEncrypt}
-                className={autoEncrypt ? cl("auto-encrypt-active") : undefined}
-                width={20}
-                height={20}
+                className={cl({ "auto-encrypt": autoEncrypt, "chat-button": true })}
             />
         </ChatBarButton>
     );
