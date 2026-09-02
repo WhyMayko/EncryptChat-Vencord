@@ -1,6 +1,6 @@
 # ==============================================================================
 # Encrypt Chat - Vencord One-Line Installer
-# Created with 💜 by Mayko (@whymayko)
+# Made with 💜 by Mayko (@whymayko)
 #
 #   iwr -useb https://raw.githubusercontent.com/WhyMayko/Encrypt-Chat-Vencord/main/install.ps1 | iex
 # ==============================================================================
@@ -122,5 +122,5 @@ Write-Host "Controls:" -ForegroundColor Cyan
 Write-Host "  - Left Click Lock:   Toggle encryption on/off" -ForegroundColor Gray
 Write-Host "  - Right Click Lock:  Open Settings & Live Playground" -ForegroundColor Gray
 Write-Host ""
-Write-Host "Crafted with love by @whymayko" -ForegroundColor Magenta
+Write-Host "Made with 💜 by @whymayko" -ForegroundColor Magenta
 Write-Host ""

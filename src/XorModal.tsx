@@ -357,7 +357,7 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
                     color: "var(--text-muted)"
                 }}
             >
-                <span>Crafted with 💜 by <strong style={{ color: "var(--brand-experiment, #5865F2)" }}>@whymayko</strong></span>
+                <span>Made with 💜 by <strong style={{ color: "var(--brand-experiment, #5865F2)" }}>@whymayko</strong></span>
             </footer>
         </Modal>
     );
