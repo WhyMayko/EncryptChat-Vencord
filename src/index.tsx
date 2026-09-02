@@ -14,6 +14,7 @@ import { ChannelStore, Menu } from "@webpack/common";
 import {
     CipherMethod,
     decryptMessage,
+    DiscordStyle,
     encryptMessage,
     FunnyStyle,
     InspecttorMode,
@@ -121,7 +122,8 @@ export default definePlugin({
                 settings.store.includeMethodPrefix,
                 settings.store.funnyStyle as FunnyStyle,
                 settings.store.inspecttorAccessKey,
-                settings.store.inspecttorMode as InspecttorMode
+                settings.store.inspecttorMode as InspecttorMode,
+                settings.store.discordStyle as DiscordStyle
             );
 
             if (encrypted) {

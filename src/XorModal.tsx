@@ -21,6 +21,7 @@ import {
 
 import {
     CipherMethod,
+    DiscordStyle,
     encryptMessage,
     FunnyStyle,
     InspecttorMode,
@@ -31,6 +32,7 @@ import { settings } from "./settings";
 const methodOptions = [
     { label: "Inspecttor", value: "inspecttor" as CipherMethod },
     { label: "PGP", value: "pgp" as CipherMethod },
+    { label: "Discord", value: "discord" as CipherMethod },
     { label: "Funny Texts", value: "funny" as CipherMethod },
     { label: "XOR Cipher", value: "xor" as CipherMethod },
     { label: "Vigenère", value: "vigenere" as CipherMethod },
@@ -44,6 +46,47 @@ const methodOptions = [
 const inspecttorModeOptions = [
     { label: "Server", value: "server" as InspecttorMode },
     { label: "Offline", value: "offline" as InspecttorMode }
+];
+
+const discordStyleOptions = [
+    { label: "Lua Codeblock (Color)", value: "lua" as DiscordStyle },
+    { label: "Diff Green (+ green lines)", value: "diff-green" as DiscordStyle },
+    { label: "Diff Red (- red lines)", value: "diff-red" as DiscordStyle },
+    { label: "ANSI Green", value: "ansi-green" as DiscordStyle },
+    { label: "ANSI Red", value: "ansi-red" as DiscordStyle },
+    { label: "ANSI Cyan", value: "ansi-cyan" as DiscordStyle },
+    { label: "ANSI Blue", value: "ansi-blue" as DiscordStyle },
+    { label: "ANSI Yellow", value: "ansi-yellow" as DiscordStyle },
+    { label: "ANSI Pink", value: "ansi-pink" as DiscordStyle },
+    { label: "ANSI White Bold", value: "ansi-white" as DiscordStyle },
+    { label: "ANSI Gray", value: "ansi-gray" as DiscordStyle },
+    { label: "Python Codeblock", value: "python" as DiscordStyle },
+    { label: "JavaScript Codeblock", value: "javascript" as DiscordStyle },
+    { label: "TypeScript Codeblock", value: "typescript" as DiscordStyle },
+    { label: "JSON Codeblock", value: "json" as DiscordStyle },
+    { label: "CSS Codeblock", value: "css" as DiscordStyle },
+    { label: "HTML / XML Codeblock", value: "xml" as DiscordStyle },
+    { label: "C++ Codeblock", value: "cpp" as DiscordStyle },
+    { label: "SQL Codeblock", value: "sql" as DiscordStyle },
+    { label: "YAML Codeblock", value: "yaml" as DiscordStyle },
+    { label: "Bash Codeblock", value: "bash" as DiscordStyle },
+    { label: "Markdown Codeblock", value: "markdown" as DiscordStyle },
+    { label: "Plain Box (Copyable)", value: "box" as DiscordStyle },
+    { label: "Spoiler Box (Hidden Codeblock)", value: "spoiler-box" as DiscordStyle },
+    { label: "Spoiler (||hidden||)", value: "spoiler" as DiscordStyle },
+    { label: "Inline Code (`text`)", value: "inline-code" as DiscordStyle },
+    { label: "Quote (> blockquote)", value: "quote" as DiscordStyle },
+    { label: "Multiline Quote (>>> text)", value: "multiquote" as DiscordStyle },
+    { label: "Header 1 (# title)", value: "h1" as DiscordStyle },
+    { label: "Header 2 (## title)", value: "h2" as DiscordStyle },
+    { label: "Header 3 (### title)", value: "h3" as DiscordStyle },
+    { label: "Subtext (-# small text)", value: "subtext" as DiscordStyle },
+    { label: "Bullet List (- item)", value: "list" as DiscordStyle },
+    { label: "Bold (**text**)", value: "bold" as DiscordStyle },
+    { label: "Italic (*text*)", value: "italic" as DiscordStyle },
+    { label: "Bold Italic (***text***)", value: "bold-italic" as DiscordStyle },
+    { label: "Underline (__text__)", value: "underline" as DiscordStyle },
+    { label: "Strikethrough (~~text~~)", value: "strikethrough" as DiscordStyle }
 ];
 
 const funnyStyleOptions = [
@@ -73,6 +116,7 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
         inspecttorMode,
         inspecttorAccessKey,
         secretWord,
+        discordStyle,
         funnyStyle,
         xorFormat,
         includeMethodPrefix,
@@ -83,6 +127,7 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
         "inspecttorMode",
         "inspecttorAccessKey",
         "secretWord",
+        "discordStyle",
         "funnyStyle",
         "xorFormat",
         "includeMethodPrefix",
@@ -107,7 +152,8 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
                     includeMethodPrefix,
                     funnyStyle as FunnyStyle,
                     inspecttorAccessKey,
-                    inspecttorMode as InspecttorMode
+                    inspecttorMode as InspecttorMode,
+                    discordStyle as DiscordStyle
                 );
                 if (isCurrent) setLiveEncrypted(enc);
             } catch (err: any) {
@@ -127,6 +173,7 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
         inspecttorMode,
         inspecttorAccessKey,
         secretWord,
+        discordStyle,
         funnyStyle,
         xorFormat,
         includeMethodPrefix
@@ -209,7 +256,24 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
                 </section>
             )}
 
-            {/* 5. Funny Text Style */}
+            {/* 5. Discord Style Selector */}
+            {method === "discord" && (
+                <section className={Margins.bottom16}>
+                    <Forms.FormTitle tag="h3">Discord Style</Forms.FormTitle>
+                    <SearchableSelect
+                        options={discordStyleOptions}
+                        value={discordStyle}
+                        placeholder="Select style"
+                        maxVisibleItems={6}
+                        closeOnSelect={true}
+                        onChange={(val: DiscordStyle) => {
+                            settings.store.discordStyle = val;
+                        }}
+                    />
+                </section>
+            )}
+
+            {/* 6. Funny Text Style */}
             {method === "funny" && (
                 <section className={Margins.bottom16}>
                     <Forms.FormTitle tag="h3">Funny Text Style</Forms.FormTitle>
@@ -226,7 +290,7 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
                 </section>
             )}
 
-            {/* 6. XOR Output Format */}
+            {/* 7. XOR Output Format */}
             {method === "xor" && (
                 <section className={Margins.bottom16}>
                     <Forms.FormTitle tag="h3">XOR Output Format</Forms.FormTitle>
@@ -248,7 +312,7 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
             {/* Include Method Prefix */}
             <FormSwitch
                 title="Include Method Prefix"
-                description="Adds tags like [PGP] to messages."
+                description="Adds tags like [PGP] or [DISCORD] to messages."
                 value={includeMethodPrefix}
                 onChange={(val: boolean) => {
                     settings.store.includeMethodPrefix = val;

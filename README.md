@@ -1,6 +1,6 @@
 # 🔒 Encrypt Chat — Vencord Plugin
 
-> **Military-grade message encryption & fun typography for Discord.**  
+> **Military-grade message encryption & creative Discord formatting.**  
 > Made with 💜 by **[@whymayko](https://github.com/WhyMayko)**.
 
 [![Vencord](https://img.shields.io/badge/Vencord-Plugin-blueviolet?style=for-the-badge)](https://vencord.dev)
@@ -26,14 +26,17 @@ That's it! Restart Discord (`Ctrl + R`) and enjoy.
 - 🔐 **Inspecttor Compatibility (100% Interoperable)**:
   - Supports both **Server Mode** (live seed negotiation + native Electron IPC bypass) and **Offline Mode** (zero-network PBKDF2 + AES-256-GCM + Deflate).
   - Seamless two-way decryption with official Inspecttor users.
-- 🛡️ **OpenPGP Industry Standard**: Full public/private armored PGP encryption.
-- ⚡ **Ultra-Fast Performance**: Built-in in-memory LRU cache guarantees **0.001ms instantaneous decrypts** with silky 60+ FPS scrolling.
-- 📋 **1-Click Copy**: Convenient `Copy` button directly in the decrypted accessory box.
-- 🎨 **Adaptive Visual Badges**:
-  - **✅ Decrypted Messages**: Vibrant translucent green pill (`#23a55a`) with an open lock icon and crisp white text.
-  - **❌ Failed Messages**: Translucent red pill (`#fa777c`) with a closed lock icon.
+- 🛡️ **OpenPGP Clean Standard**: Clean compact binary Base64 PGP without 1990s email armor headers.
+- 🎨 **Discord Formatting Engine (38+ Styles)**:
+  - **Syntax Highlighting & Colored Codeblocks**: Lua, Diff Green (`+ line`), Diff Red (`- line`), ANSI Green, ANSI Red, ANSI Cyan, ANSI Blue, ANSI Yellow, ANSI Pink, ANSI White Bold, ANSI Gray, Python, JavaScript, TypeScript, JSON, CSS, XML/HTML, C++, SQL, YAML, Bash, Markdown, Plain Copyable Box, Hidden Spoiler Box.
+  - **Rich Typography**: Spoilers (`||hidden||`), Inline Code (`` `code` ``), Blockquotes (`> quote`), Multiline Quotes (`>>> text`), Headers (`#`, `##`, `###`), Subtext (`-# tiny gray text`), Bullet Lists, Bold, Italic, Bold-Italic, Underline, Strikethrough.
 - 🎭 **12 Funny Text Typography Styles**:
   - Superscript, Subscript, Alternating Caps, Upside Down, Bubble Text, Reverse, Small Caps, Fullwidth, Leet Speak, Zalgo Glitch, Strikethrough, Underline.
+- ⚡ **Ultra-Fast Performance**: Built-in in-memory LRU cache guarantees **0.001ms instantaneous decrypts** with silky 60+ FPS scrolling.
+- 📋 **1-Click Copy**: Convenient `Copy` button directly in the decrypted accessory box.
+- 🟢 **Adaptive Visual Badges**:
+  - **✅ Decrypted Messages**: Vibrant translucent green pill (`#23a55a`) with an open lock icon and crisp white text.
+  - **❌ Failed Messages**: Translucent red pill (`#fa777c`) with a closed lock icon.
 - 🔢 **Classic Ciphers**: XOR Cipher (Binary/Hex/Base64), Vigenère, Morse Code, Plain Binary, Hex, Base64, and ROT13.
 
 ---
@@ -42,7 +45,7 @@ That's it! Restart Discord (`Ctrl + R`) and enjoy.
 
 | Action | Shortcut / Trigger |
 |---|---|
-| **Toggle Encryption** | Left-Click Lock Icon in Chat Bar |
+| **Toggle Active Method** | Left-Click Lock Icon in Chat Bar |
 | **Open Settings & Playground** | Right-Click Lock Icon in Chat Bar |
 | **Manual Decrypt** | Right-Click any message → `Decrypt Message` or click the lock on message popover |
 | **Copy Decrypted Text** | Click `Copy` next to `Dismiss` on the decrypted card |

@@ -67,6 +67,7 @@ function Dismiss({ onDismiss }: { onDismiss: () => void }) {
 const METHOD_LABELS: Record<string, string> = {
     inspecttor: "Inspecttor",
     pgp: "PGP",
+    discord: "Discord",
     funny: "Funny Text",
     xor: "XOR Cipher",
     vigenere: "Vigenère",
