@@ -1,6 +1,6 @@
 # 🔒 Encrypt Chat — Vencord Plugin
 
-> **Military-grade message encryption & creative Discord formatting.**  
+> **Encrypt any message or style it using various ciphers and Discord formats.**  
 > Made with 💜 by **[@whymayko](https://github.com/WhyMayko)**.
 
 [![Vencord](https://img.shields.io/badge/Vencord-Plugin-blueviolet?style=for-the-badge)](https://vencord.dev)

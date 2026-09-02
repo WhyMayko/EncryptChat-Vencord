@@ -59,7 +59,7 @@ const messageCtxPatch: NavContextMenuPatchCallback = (children, { message }: { m
 
 export default definePlugin({
     name: "EncryptChat",
-    description: "Military-grade encryption & fun typography for Discord. Created by @whymayko.",
+    description: "Encrypt any message or style it using various ciphers and Discord formats.",
     tags: ["Chat", "Utility", "Security"],
     authors: [
         {

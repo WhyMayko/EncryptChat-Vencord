@@ -105,7 +105,14 @@ const xorFormatOptions = [
     { label: "Base64", value: "base64" as XorFormat }
 ];
 
-function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps }) {
+export function UniversalSettingsView({ closePluginSettings }: { closePluginSettings?: () => void }) {
+    useEffect(() => {
+        if (closePluginSettings) {
+            closePluginSettings();
+            openXorModal();
+        }
+    }, [closePluginSettings]);
+
     const {
         method,
         inspecttorMode,
@@ -130,7 +137,7 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
         "autoDecrypt"
     ]);
 
-    const [testInput, setTestInput] = useState("Hello World");
+    const [testInput, setTestInput] = useState("Hello World!");
     const [liveEncrypted, setLiveEncrypted] = useState("");
     const [copied, setCopied] = useState(false);
 
@@ -190,7 +197,7 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
     };
 
     return (
-        <Modal {...rootProps} title="Encrypt Chat - Settings">
+        <div className="vc-encrypt-chat-settings-view">
             <section className={Margins.bottom16}>
                 <Forms.FormTitle tag="h3">Encryption Method</Forms.FormTitle>
                 <SearchableSelect
@@ -387,6 +394,14 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
             >
                 <span>Made with 💜 by <strong style={{ color: "var(--brand-experiment, #5865F2)" }}>@whymayko</strong></span>
             </footer>
+        </div>
+    );
+}
+
+function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps }) {
+    return (
+        <Modal {...rootProps} title="Encrypt Chat - Settings">
+            <UniversalSettingsView />
         </Modal>
     );
 }

@@ -1,13 +1,18 @@
 import { definePluginSettings } from "@api/Settings";
-import { Button } from "@components/Button";
 import { OptionType } from "@utils/types";
 
-import { openXorModal } from "./XorModal";
+import { UniversalSettingsView } from "./XorModal";
 
 export const settings = definePluginSettings({
+    universalSettings: {
+        type: OptionType.COMPONENT,
+        description: "Encrypt Chat Settings",
+        component: UniversalSettingsView
+    },
     method: {
         type: OptionType.SELECT,
         description: "Encryption and Obfuscation Method",
+        hidden: () => true,
         options: [
             { label: "Inspecttor", value: "inspecttor", default: true },
             { label: "PGP", value: "pgp" },
@@ -25,6 +30,7 @@ export const settings = definePluginSettings({
     inspecttorMode: {
         type: OptionType.SELECT,
         description: "Inspecttor Mode",
+        hidden: () => true,
         options: [
             { label: "Server", value: "server", default: true },
             { label: "Offline", value: "offline" }
@@ -33,16 +39,19 @@ export const settings = definePluginSettings({
     inspecttorAccessKey: {
         type: OptionType.STRING,
         description: "Server Access Key",
+        hidden: () => true,
         default: ""
     },
     secretWord: {
         type: OptionType.STRING,
         description: "Secret Word / Passphrase",
+        hidden: () => true,
         default: ""
     },
     discordStyle: {
         type: OptionType.SELECT,
         description: "Discord Style",
+        hidden: () => true,
         options: [
             { label: "Lua Codeblock (Color)", value: "lua", default: true },
             { label: "Diff Green (+ green lines)", value: "diff-green" },
@@ -87,6 +96,7 @@ export const settings = definePluginSettings({
     funnyStyle: {
         type: OptionType.SELECT,
         description: "Funny Text Style",
+        hidden: () => true,
         options: [
             { label: "Superscript Top", value: "superscript", default: true },
             { label: "Subscript Bottom", value: "subscript" },
@@ -105,6 +115,7 @@ export const settings = definePluginSettings({
     xorFormat: {
         type: OptionType.SELECT,
         description: "XOR Format",
+        hidden: () => true,
         options: [
             { label: "Binary", value: "binary", default: true },
             { label: "Hexadecimal", value: "hex" },
@@ -114,28 +125,19 @@ export const settings = definePluginSettings({
     includeMethodPrefix: {
         type: OptionType.BOOLEAN,
         description: "Include Method Tag in Messages",
+        hidden: () => true,
         default: false
     },
     autoEncrypt: {
         type: OptionType.BOOLEAN,
         description: "Auto-Encrypt Outgoing Messages",
+        hidden: () => true,
         default: false
     },
     autoDecrypt: {
         type: OptionType.BOOLEAN,
         description: "Auto-Decrypt Incoming Messages",
+        hidden: () => true,
         default: true
-    },
-    openConfig: {
-        type: OptionType.COMPONENT,
-        description: "Configuration & Live Playground",
-        component: () => (
-            <Button
-                onClick={() => openXorModal()}
-                size={Button.Sizes.SMALL}
-            >
-                Open Settings & Playground
-            </Button>
-        )
     }
 });
