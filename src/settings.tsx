@@ -46,7 +46,7 @@ export const settings = definePluginSettings({
     secretWord: {
         type: OptionType.STRING,
         description: "Secret Word / Passphrase",
-        default: "galax"
+        default: "Test"
     },
     xorFormat: {
         type: OptionType.SELECT,

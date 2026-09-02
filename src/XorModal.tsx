@@ -69,7 +69,7 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
         "autoEncrypt"
     ]);
 
-    const [testInput, setTestInput] = useState("Hello world! Secret test 🚀");
+    const [testInput, setTestInput] = useState("Hello World");
     const [liveEncrypted, setLiveEncrypted] = useState("");
     const [liveDecrypted, setLiveDecrypted] = useState("");
     const [isProcessing, setIsProcessing] = useState(false);

@@ -95,7 +95,7 @@ if (-not $j.PSObject.Properties["plugins"]) {
 Set-JsonProp $j.plugins "EncryptChat" ([pscustomobject]@{
     enabled             = $true
     method              = "inspecttor"
-    secretWord          = "galax"
+    secretWord          = "Test"
     funnyStyle          = "superscript"
     xorFormat           = "binary"
     includeMethodPrefix = $false
