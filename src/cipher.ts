@@ -143,7 +143,7 @@ const toHex = (bytes: Uint8Array) => Array.from(bytes, b => b.toString(16).padSt
 const fromHex = (hex: string) => Uint8Array.from(hex.match(/.{2}/g)?.map(b => parseInt(b, 16)) || []);
 
 /* ==========================================================================
-   3. Inspecttor Server Engine (Live inspecttor.xyz API + Dynamic Server Seed)
+   3. Inspecttor Server Engine (Live API + Native Electron IPC Bypass)
    ========================================================================== */
 
 const INSPECTTOR_SERVER = "https://inspecttor.xyz";
@@ -154,6 +154,16 @@ async function getInspecttorServerSeed(accessKey: string, saltHex: string): Prom
     const cleanKey = (accessKey || "").trim();
     if (!cleanKey) throw new Error("Server Access Key is required for Server mode.");
 
+    // 1. Try Native Electron IPC (Bypasses Discord CORS/CSP 100%)
+    try {
+        const nativeHelper = (globalThis as any).VencordNative?.pluginHelpers?.EncryptChat;
+        if (nativeHelper?.fetchInspecttorSeed) {
+            const seedHex = await nativeHelper.fetchInspecttorSeed(INSPECTTOR_SERVER, cleanKey, saltHex);
+            if (seedHex) return fromHex(seedHex);
+        }
+    } catch {}
+
+    // 2. Direct fetch fallback
     const cacheKey = `${cleanKey}:${saltHex}`;
     const cached = serverSeedCache.get(cacheKey);
     if (cached) return cached;
@@ -354,7 +364,7 @@ export function isInspecttorToken(str: string): boolean {
 
 /* ==========================================================================
    5. Funny Texts Engine (12 Styles)
-   ========================================================================= */
+   ========================================================================== */
 
 const SUPERSCRIPT_MAP: Record<string, string> = {
     a: "ᵃ", b: "ᵇ", c: "ᶜ", d: "ᵈ", e: "ᵉ", f: "ᶠ", g: "ᵍ", h: "ʰ", i: "ⁱ", j: "ʲ",
