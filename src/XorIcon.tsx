@@ -27,20 +27,7 @@ export const XorChatBarIcon: ChatBarButtonFactory = ({ isMainChat, settings }) =
 
     return (
         <ChatBarButton
-            tooltip="Encrypt Chat - Vencord"
-            icon={props => (
-                <XorIcon
-                    {...props}
-                    style={
-                        autoEncrypt
-                            ? {
-                                  color: "var(--green-360, #23a55a)",
-                                  fill: "var(--green-360, #23a55a)"
-                              }
-                            : undefined
-                    }
-                />
-            )}
+            tooltip="Encrypt Chat"
             onClick={() => {
                 settings.store.autoEncrypt = !settings.store.autoEncrypt;
             }}
@@ -50,9 +37,20 @@ export const XorChatBarIcon: ChatBarButtonFactory = ({ isMainChat, settings }) =
                 openXorModal();
             }}
             buttonProps={{
-                className: autoEncrypt ? "vc-xor-button-active" : undefined,
-                "aria-label": "Encrypt Chat - Vencord"
+                "aria-label": "Encrypt Chat",
+                className: autoEncrypt ? "vc-xor-button-active" : undefined
             }}
-        />
+        >
+            <XorIcon
+                style={
+                    autoEncrypt
+                        ? {
+                              color: "var(--green-360, #23a55a)",
+                              fill: "var(--green-360, #23a55a)"
+                          }
+                        : undefined
+                }
+            />
+        </ChatBarButton>
     );
 };

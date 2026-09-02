@@ -49,7 +49,7 @@ const decoder = new TextDecoder("utf-8", { fatal: false });
    ========================================================================== */
 
 export async function encryptPgp(text: string, secretWord: string, includePrefix = false): Promise<string> {
-    const effectivePass = (secretWord || "galax").trim();
+    const effectivePass = (secretWord || "Test").trim();
     const message = await openpgp.createMessage({ text });
     const armored = await openpgp.encrypt({
         message,
@@ -61,7 +61,7 @@ export async function encryptPgp(text: string, secretWord: string, includePrefix
 }
 
 export async function decryptPgp(armoredText: string, secretWord: string): Promise<string> {
-    const effectivePass = (secretWord || "galax").trim();
+    const effectivePass = (secretWord || "Test").trim();
     const cleanArmored = armoredText.replace(/^\[PGP\]\s*/i, "").trim();
     const message = await openpgp.readMessage({ armoredMessage: cleanArmored });
     const { data: decrypted } = await openpgp.decrypt({
@@ -144,7 +144,7 @@ export function isInspecttorToken(str: string): boolean {
 const keyCache = new Map<string, CryptoKey>();
 
 async function deriveInspecttorKey(passphrase: string, salt: Uint8Array): Promise<CryptoKey> {
-    const effectivePass = (passphrase || "galax").trim();
+    const effectivePass = (passphrase || "Test").trim();
     const saltHex = Array.from(salt).map(b => b.toString(16).padStart(2, "0")).join("");
     const cacheKey = `${effectivePass}:${saltHex}`;
 
@@ -213,7 +213,7 @@ export async function decryptInspecttor(tokenStr: string, secretWord: string): P
    3. Funny Texts Engine
    ========================================================================== */
 
-// 3.1 Superscript (Tiny Top Text)
+// 3.1 Superscript
 const SUPERSCRIPT_MAP: Record<string, string> = {
     a: "ᵃ", b: "ᵇ", c: "ᶜ", d: "ᵈ", e: "ᵉ", f: "ᶠ", g: "ᵍ", h: "ʰ", i: "ⁱ", j: "ʲ",
     k: "ᵏ", l: "ˡ", m: "ᵐ", n: "ⁿ", o: "ᵒ", p: "ᵖ", r: "ʳ", s: "ˢ", t: "ᵗ", u: "ᵘ",
@@ -238,7 +238,7 @@ export function fromSuperscript(str: string): string {
     return Array.from(clean).map(c => REV_SUPERSCRIPT[c] || c).join("");
 }
 
-// 3.2 Subscript (Tiny Bottom Text)
+// 3.2 Subscript
 const SUBSCRIPT_MAP: Record<string, string> = {
     a: "ₐ", e: "ₑ", h: "ₕ", i: "ᵢ", j: "ⱼ", k: "ₖ", l: "ₗ", m: "ₘ", n: "ₙ", o: "ₒ",
     p: "ₚ", r: "ᵣ", s: "ₛ", t: "ₜ", u: "ᵤ", v: "ᵥ", x: "ₓ",
@@ -260,7 +260,7 @@ export function fromSubscript(str: string): string {
     return Array.from(clean).map(c => REV_SUBSCRIPT[c] || c).join("");
 }
 
-// 3.3 Alternating Caps (Subindo e Descendo)
+// 3.3 Alternating Caps
 export function toAlternating(str: string, includePrefix = false): string {
     const clean = str.replace(/^\[(?:FUNNY:)?ALTERNATING\]\s*/i, "");
     let res = "";
@@ -461,7 +461,7 @@ export function encryptFunny(text: string, style: FunnyStyle = "superscript", in
    ========================================================================== */
 
 export function vigenereEncrypt(text: string, key: string, includePrefix = false): string {
-    const cleanKey = (key || "galax").replace(/[^a-zA-Z]/g, "").toUpperCase() || "GALAX";
+    const cleanKey = (key || "Test").replace(/[^a-zA-Z]/g, "").toUpperCase() || "TEST";
     let res = "";
     let ki = 0;
     for (let i = 0; i < text.length; i++) {
@@ -481,7 +481,7 @@ export function vigenereEncrypt(text: string, key: string, includePrefix = false
 
 export function vigenereDecrypt(text: string, key: string): string {
     const cleanText = text.replace(/^\[VIGENERE\]\s*/i, "").replace(/^\[VIG\]\s*/i, "");
-    const cleanKey = (key || "galax").replace(/[^a-zA-Z]/g, "").toUpperCase() || "GALAX";
+    const cleanKey = (key || "Test").replace(/[^a-zA-Z]/g, "").toUpperCase() || "TEST";
     let res = "";
     let ki = 0;
     for (let i = 0; i < cleanText.length; i++) {
@@ -640,7 +640,7 @@ export function rot13Decrypt(text: string): string {
 
 export function getEffectiveXorKey(key: string): Uint8Array {
     const trimmed = (key || "").trim();
-    return encoder.encode(trimmed || "galax");
+    return encoder.encode(trimmed || "Test");
 }
 
 export function xorBytes(data: Uint8Array, key: Uint8Array): Uint8Array {
@@ -705,7 +705,7 @@ export function xorDecrypt(cipherText: string, secretWord: string): { success: b
     }
 
     let rawBytes: Uint8Array | null = null;
-    if (format === "binary" || /^[01\s]+$/.test(cleaned)) {
+    if (format === "binary" || (/^[01\s]+$/.test(cleaned) && cleaned.includes(" "))) {
         const binClean = cleaned.replace(/[^01]/g, "");
         if (binClean.length % 8 === 0 && binClean.length > 0) {
             rawBytes = new Uint8Array(binClean.length / 8);
@@ -721,12 +721,6 @@ export function xorDecrypt(cipherText: string, secretWord: string): { success: b
                 rawBytes[i] = parseInt(hexClean.slice(i * 2, (i + 1) * 2), 16);
             }
         }
-    } else {
-        try {
-            const bin = atob(cleaned);
-            rawBytes = new Uint8Array(bin.length);
-            for (let i = 0; i < bin.length; i++) rawBytes[i] = bin.charCodeAt(i);
-        } catch {}
     }
 
     if (!rawBytes) {
@@ -739,7 +733,7 @@ export function xorDecrypt(cipherText: string, secretWord: string): { success: b
 }
 
 /* ==========================================================================
-   9. Unified Encrypt & Fast Auto-Decrypt Functions
+   9. Unified Encrypt & Robust Auto-Decrypt Functions
    ========================================================================== */
 
 export async function encryptMessage(
@@ -931,7 +925,7 @@ export async function decryptMessage(
         }
     }
 
-    // 9. Tag-less Auto-Detection: Fullwidth / Vaporwave
+    // 9. Tag-less Auto-Detection: Fullwidth
     if (/[\uff01-\uff5e\u3000]/.test(trimmed)) {
         const fwDec = fromFullwidth(trimmed);
         if (fwDec && fwDec !== trimmed) {
@@ -955,54 +949,28 @@ export async function decryptMessage(
         }
     }
 
-    // 12. Tag-less Auto-Detection: Morse Code
-    if (/^[.\-/_,\s]+$/.test(trimmed) && (trimmed.includes(".") || trimmed.includes("-"))) {
+    // 12. Tag-less Auto-Detection: Morse Code (strict check: only dots, dashes, and slashes)
+    if (/^[.\-/\s]+$/.test(trimmed) && trimmed.length > 2 && (trimmed.includes(".") || trimmed.includes("-"))) {
         const morseDec = morseToText(trimmed);
-        if (morseDec && morseDec.length > 0) {
+        if (morseDec && morseDec.length > 0 && morseDec !== trimmed) {
             return { success: true, text: morseDec, method: "morse" };
         }
     }
 
-    // 13. Tag-less Auto-Detection: Binary (XOR or Plain)
-    if (/^[01\s]+$/.test(trimmed)) {
-        const xorRes = xorDecrypt(trimmed, secretWord);
-        if (xorRes.success && xorRes.text.length > 0) {
-            return { success: true, text: xorRes.text, method: "xor" };
-        }
+    // 13. Tag-less Auto-Detection: Binary (strict check: space-separated 8-bit bytes)
+    if (/^[01]{8}(\s+[01]{8})+$/.test(trimmed)) {
         const plainBin = plainBinaryToText(trimmed);
         if (plainBin && plainBin.length > 0) {
             return { success: true, text: plainBin, method: "binary" };
         }
     }
 
-    // 14. Tag-less Auto-Detection: Hex (XOR or Plain)
-    if (/^[0-9a-fA-F\s]+$/.test(trimmed) && trimmed.includes(" ")) {
-        const xorRes = xorDecrypt(trimmed, secretWord);
-        if (xorRes.success && xorRes.text.length > 0) {
-            return { success: true, text: xorRes.text, method: "xor" };
-        }
+    // 14. Tag-less Auto-Detection: Hex (strict check: space-separated 2-char hex bytes)
+    if (/^[0-9a-fA-F]{2}(\s+[0-9a-fA-F]{2})+$/.test(trimmed)) {
         const hexDec = hexToText(trimmed);
         if (hexDec && hexDec.length > 0) {
             return { success: true, text: hexDec, method: "hex" };
         }
-    }
-
-    // 15. Tag-less Auto-Detection: Base64
-    if (/^[A-Za-z0-9+/=]+$/.test(trimmed) && trimmed.length % 4 === 0) {
-        const xorRes = xorDecrypt(trimmed, secretWord);
-        if (xorRes.success && xorRes.text.length > 0) {
-            return { success: true, text: xorRes.text, method: "xor" };
-        }
-        const b64Dec = base64ToText(trimmed);
-        if (b64Dec && b64Dec.length > 0) {
-            return { success: true, text: b64Dec, method: "base64" };
-        }
-    }
-
-    // 16. Tag-less Fallback: Vigenère or XOR
-    const vigDec = vigenereDecrypt(trimmed, secretWord);
-    if (vigDec && vigDec !== trimmed) {
-        return { success: true, text: vigDec, method: "vigenere" };
     }
 
     return {
