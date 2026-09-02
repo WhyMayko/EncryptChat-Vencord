@@ -40,8 +40,10 @@ function Dismiss({ onDismiss }: { onDismiss: () => void }) {
 }
 
 const METHOD_LABELS: Record<string, string> = {
-    pgp: "PGP",
+    inspecttor_server: "Inspecttor Server",
+    inspecttor_offline: "Inspecttor Offline",
     inspecttor: "Inspecttor",
+    pgp: "PGP",
     funny: "Funny Text",
     xor: "XOR Cipher",
     vigenere: "Vigenère",
@@ -55,7 +57,11 @@ const METHOD_LABELS: Record<string, string> = {
 
 export function XorAccessory({ message }: { message: Message }) {
     const [decrypted, setDecrypted] = useState<DecryptResult | undefined>();
-    const { autoDecrypt, secretWord } = settings.use(["autoDecrypt", "secretWord"]);
+    const { autoDecrypt, secretWord, inspecttorAccessKey } = settings.use([
+        "autoDecrypt",
+        "secretWord",
+        "inspecttorAccessKey"
+    ]);
 
     useEffect(() => {
         if ((message as any).vencordEmbeddedBy) return;
@@ -66,7 +72,7 @@ export function XorAccessory({ message }: { message: Message }) {
         if (autoDecrypt) {
             const content = getMessageContent(message);
             if (content && content.trim()) {
-                decryptMessage(content, secretWord)
+                decryptMessage(content, secretWord, inspecttorAccessKey)
                     .then(res => {
                         if (isCurrent && res.success) {
                             setDecrypted(res);
@@ -80,7 +86,7 @@ export function XorAccessory({ message }: { message: Message }) {
             isCurrent = false;
             DecryptSetters.delete(message.id);
         };
-    }, [message.id, (message as any).content, autoDecrypt, secretWord]);
+    }, [message.id, (message as any).content, autoDecrypt, secretWord, inspecttorAccessKey]);
 
     if (!decrypted) return null;
 

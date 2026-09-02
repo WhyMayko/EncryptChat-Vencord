@@ -1,13 +1,15 @@
 /*
  * Encrypt Chat - Cipher & Translation Engine
- * Supports: PGP, Inspecttor (Full inspecttor.xyz protocol + offline fallback), Funny Texts, XOR Cipher, Vigenère, Morse Code, Binary, Hexadecimal, Base64, ROT13
+ * Supports: Inspecttor Server, Inspecttor Offline, PGP, Funny Texts, XOR Cipher, Vigenère, Morse Code, Binary, Hexadecimal, Base64, ROT13
  */
 
+import { deflateSync, inflateSync } from "fflate";
 import * as openpgp from "openpgp";
 
 export type CipherMethod =
+    | "inspecttor_server"
+    | "inspecttor_offline"
     | "pgp"
-    | "inspecttor"
     | "funny"
     | "xor"
     | "vigenere"
@@ -48,7 +50,9 @@ const decoder = new TextDecoder("utf-8", { fatal: false });
    ========================================================================== */
 
 export async function encryptPgp(text: string, secretWord: string, includePrefix = false): Promise<string> {
-    const effectivePass = (secretWord || "Test").trim();
+    const effectivePass = (secretWord || "").trim();
+    if (!effectivePass) throw new Error("Secret Word is required for PGP encryption.");
+
     const message = await openpgp.createMessage({ text });
     const armored = await openpgp.encrypt({
         message,
@@ -60,7 +64,9 @@ export async function encryptPgp(text: string, secretWord: string, includePrefix
 }
 
 export async function decryptPgp(armoredText: string, secretWord: string): Promise<string> {
-    const effectivePass = (secretWord || "Test").trim();
+    const effectivePass = (secretWord || "").trim();
+    if (!effectivePass) throw new Error("Secret Word is required for PGP decryption.");
+
     const cleanArmored = armoredText.replace(/^\[PGP\]\s*/i, "").trim();
     const message = await openpgp.readMessage({ armoredMessage: cleanArmored });
     const { data: decrypted } = await openpgp.decrypt({
@@ -71,7 +77,7 @@ export async function decryptPgp(armoredText: string, secretWord: string): Promi
 }
 
 /* ==========================================================================
-   2. Inspecttor Engine (100% Compatible with inspecttor.xyz & Cipher plugin)
+   2. Base85 Helper
    ========================================================================== */
 
 const BASE85_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#$%()*+,-./:;=?@[]^_{}";
@@ -83,7 +89,7 @@ const BASE85_LOOKUP = (() => {
     return table;
 })();
 
-function base85Encode(bytes: Uint8Array): string {
+export function base85Encode(bytes: Uint8Array): string {
     let result = "";
     for (let i = 0; i < bytes.length; i += 4) {
         const chunkLen = Math.min(4, bytes.length - i);
@@ -103,7 +109,7 @@ function base85Encode(bytes: Uint8Array): string {
     return result;
 }
 
-function base85Decode(str: string): Uint8Array | null {
+export function base85Decode(str: string): Uint8Array | null {
     const output: number[] = [];
     for (let i = 0; i < str.length; i += 5) {
         const chunkLen = Math.min(5, str.length - i);
@@ -135,67 +141,65 @@ function base85Decode(str: string): Uint8Array | null {
 const toHex = (bytes: Uint8Array) => Array.from(bytes, b => b.toString(16).padStart(2, "0")).join("");
 const fromHex = (hex: string) => Uint8Array.from(hex.match(/.{2}/g)?.map(b => parseInt(b, 16)) || []);
 
+/* ==========================================================================
+   3. Inspecttor Server Engine (Live inspecttor.xyz API + Dynamic Server Seed)
+   ========================================================================== */
+
 const INSPECTTOR_SERVER = "https://inspecttor.xyz";
-const INSPECTTOR_ACCESS_KEY = "Iyqz0XO0EceG";
+let cachedApiToken: { key: string; token: string; until: number } | null = null;
+const serverSeedCache = new Map<string, Uint8Array>();
 
-let cachedApiToken: { token: string; until: number } | null = null;
-const seedCache = new Map<string, Uint8Array>();
+async function getInspecttorServerSeed(accessKey: string, saltHex: string): Promise<Uint8Array> {
+    const cleanKey = (accessKey || "").trim();
+    if (!cleanKey) throw new Error("Inspecttor Access Key is required for Server mode.");
 
-async function getInspecttorSeed(saltHex: string): Promise<Uint8Array | null> {
-    const cached = seedCache.get(saltHex);
+    const cacheKey = `${cleanKey}:${saltHex}`;
+    const cached = serverSeedCache.get(cacheKey);
     if (cached) return cached;
 
-    try {
-        const now = Date.now();
-        if (!cachedApiToken || cachedApiToken.until < now + 30000) {
-            const tokenRes = await fetch(`${INSPECTTOR_SERVER}/translator/token`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ key: INSPECTTOR_ACCESS_KEY })
-            });
-            if (tokenRes.ok) {
-                const data = await tokenRes.json();
-                cachedApiToken = { token: data.token, until: now + (data.ttl || 3600000) };
-            }
-        }
+    const now = Date.now();
+    if (!cachedApiToken || cachedApiToken.key !== cleanKey || cachedApiToken.until < now + 30000) {
+        const tokenRes = await fetch(`${INSPECTTOR_SERVER}/translator/token`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ key: cleanKey })
+        });
+        if (tokenRes.status === 401) throw new Error("Invalid Inspecttor Access Key.");
+        if (!tokenRes.ok) throw new Error(`Token request failed (${tokenRes.status})`);
 
-        if (cachedApiToken) {
-            const kdfRes = await fetch(`${INSPECTTOR_SERVER}/translator/kdf`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ token: cachedApiToken.token, salt: saltHex })
-            });
-            if (kdfRes.ok) {
-                const kdfData = await kdfRes.json();
-                if (kdfData.seed) {
-                    const seedBytes = fromHex(kdfData.seed);
-                    seedCache.set(saltHex, seedBytes);
-                    return seedBytes;
-                }
-            }
-        }
-    } catch {}
-    return null;
+        const data = await tokenRes.json();
+        cachedApiToken = { key: cleanKey, token: data.token, until: now + (data.ttl || 3600000) };
+    }
+
+    const kdfRes = await fetch(`${INSPECTTOR_SERVER}/translator/kdf`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: cachedApiToken.token, salt: saltHex })
+    });
+    if (!kdfRes.ok) throw new Error(`Server seed request failed (${kdfRes.status})`);
+
+    const kdfData = await kdfRes.json();
+    if (!kdfData.seed) throw new Error("No seed returned by Inspecttor server.");
+
+    const seedBytes = fromHex(kdfData.seed);
+    serverSeedCache.set(cacheKey, seedBytes);
+    return seedBytes;
 }
 
-export function isInspecttorToken(str: string): boolean {
-    const cleaned = str
-        .replace(/^\u200B\u200C\u200B\u200D/, "")
-        .replace(/^\[INSPECTTOR\]\s*/i, "")
-        .replace(/\s+/g, "");
-    if (cleaned.length < 35) return false;
-    const rawBytes = base85Decode(cleaned);
-    if (!rawBytes || rawBytes.length < 40) return false;
-    return rawBytes[0] === 1 || rawBytes[0] === 17;
-}
+export async function encryptInspecttorServer(
+    text: string,
+    secretWord: string,
+    accessKey: string,
+    includePrefix = false
+): Promise<string> {
+    const effectivePass = (secretWord || "").trim();
+    if (!effectivePass) throw new Error("Secret Word is required for Inspecttor encryption.");
 
-export async function encryptInspecttor(text: string, secretWord: string, includePrefix = false): Promise<string> {
-    const effectivePass = (secretWord || "fNfeAcPeIwAPK-Cn4VUitJQe").trim();
     const salt = crypto.getRandomValues(new Uint8Array(16));
     const iv = crypto.getRandomValues(new Uint8Array(12));
     const saltHex = toHex(salt);
 
-    const seedBytes = await getInspecttorSeed(saltHex);
+    const seedBytes = await getInspecttorServerSeed(accessKey, saltHex);
 
     const rawKey = await crypto.subtle.importKey("raw", encoder.encode(effectivePass), "PBKDF2", false, ["deriveBits"]);
     const derivedBits = new Uint8Array(
@@ -206,9 +210,7 @@ export async function encryptInspecttor(text: string, secretWord: string, includ
         )
     );
 
-    if (seedBytes && seedBytes.length >= 32) {
-        for (let i = 0; i < 32; i++) derivedBits[i] ^= seedBytes[i];
-    }
+    for (let i = 0; i < 32; i++) derivedBits[i] ^= seedBytes[i];
 
     const cryptoKey = await crypto.subtle.importKey("raw", derivedBits as any, { name: "AES-GCM" }, false, ["encrypt"]);
     const cipherBuffer = await crypto.subtle.encrypt({ name: "AES-GCM", iv: iv as any }, cryptoKey, encoder.encode(text));
@@ -224,48 +226,133 @@ export async function encryptInspecttor(text: string, secretWord: string, includ
     return includePrefix ? `[INSPECTTOR] ${enc}` : enc;
 }
 
-export async function decryptInspecttor(tokenStr: string, secretWord: string): Promise<string> {
+export async function decryptInspecttorServer(
+    tokenStr: string,
+    secretWord: string,
+    accessKey: string
+): Promise<string> {
+    const effectivePass = (secretWord || "").trim();
+    if (!effectivePass) throw new Error("Secret Word is required for Inspecttor decryption.");
+
     const cleaned = tokenStr
         .replace(/^\u200B\u200C\u200B\u200D/, "")
         .replace(/^\[INSPECTTOR\]\s*/i, "")
         .replace(/\s+/g, "");
     const rawBytes = base85Decode(cleaned);
-    if (!rawBytes || rawBytes.length < 40) throw new Error("Invalid inspecttor token");
+    if (!rawBytes || rawBytes.length < 40) throw new Error("Invalid inspecttor server token");
+    if (rawBytes[0] !== 1) throw new Error("Not an inspecttor server format token");
 
-    const effectivePass = (secretWord || "fNfeAcPeIwAPK-Cn4VUitJQe").trim();
+    const salt = rawBytes.slice(1, 17);
+    const iv = rawBytes.slice(17, 29);
+    const cipherData = rawBytes.slice(29);
+    const saltHex = toHex(salt);
 
-    // Format 1: Inspecttor Protocol (16-byte salt, 12-byte IV, header 1)
-    if (rawBytes[0] === 1) {
-        const salt = rawBytes.slice(1, 17);
-        const iv = rawBytes.slice(17, 29);
-        const cipherData = rawBytes.slice(29);
-        const saltHex = toHex(salt);
+    const seedBytes = await getInspecttorServerSeed(accessKey, saltHex);
 
-        const seedBytes = await getInspecttorSeed(saltHex);
+    const rawKey = await crypto.subtle.importKey("raw", encoder.encode(effectivePass), "PBKDF2", false, ["deriveBits"]);
+    const derivedBits = new Uint8Array(
+        await crypto.subtle.deriveBits(
+            { name: "PBKDF2", salt: salt as any, iterations: 310000, hash: "SHA-256" },
+            rawKey,
+            256
+        )
+    );
 
-        const rawKey = await crypto.subtle.importKey("raw", encoder.encode(effectivePass), "PBKDF2", false, ["deriveBits"]);
-        const derivedBits = new Uint8Array(
-            await crypto.subtle.deriveBits(
-                { name: "PBKDF2", salt: salt as any, iterations: 310000, hash: "SHA-256" },
-                rawKey,
-                256
-            )
-        );
+    for (let i = 0; i < 32; i++) derivedBits[i] ^= seedBytes[i];
 
-        if (seedBytes && seedBytes.length >= 32) {
-            for (let i = 0; i < 32; i++) derivedBits[i] ^= seedBytes[i];
-        }
-
-        const cryptoKey = await crypto.subtle.importKey("raw", derivedBits as any, { name: "AES-GCM" }, false, ["decrypt"]);
-        const decryptedBuffer = await crypto.subtle.decrypt({ name: "AES-GCM", iv: iv as any }, cryptoKey, cipherData as any);
-        return decoder.decode(new Uint8Array(decryptedBuffer));
-    }
-
-    throw new Error("Unknown inspecttor format");
+    const cryptoKey = await crypto.subtle.importKey("raw", derivedBits as any, { name: "AES-GCM" }, false, ["decrypt"]);
+    const decryptedBuffer = await crypto.subtle.decrypt({ name: "AES-GCM", iv: iv as any }, cryptoKey, cipherData as any);
+    return decoder.decode(new Uint8Array(decryptedBuffer));
 }
 
 /* ==========================================================================
-   3. Funny Texts Engine
+   4. Inspecttor Offline Engine (Local Standalone AES-256-GCM + PBKDF2 + Deflate)
+   ========================================================================== */
+
+export async function encryptInspecttorOffline(
+    text: string,
+    secretWord: string,
+    includePrefix = false
+): Promise<string> {
+    const effectivePass = (secretWord || "").trim();
+    if (!effectivePass) throw new Error("Secret Word is required for Inspecttor Offline encryption.");
+
+    const salt = crypto.getRandomValues(new Uint8Array(8));
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+
+    const rawKey = await crypto.subtle.importKey("raw", encoder.encode(effectivePass), "PBKDF2", false, ["deriveKey"]);
+    const cryptoKey = await crypto.subtle.deriveKey(
+        { name: "PBKDF2", salt: salt as any, iterations: 310000, hash: "SHA-256" },
+        rawKey,
+        { name: "AES-GCM", length: 256 },
+        false,
+        ["encrypt"]
+    );
+
+    const plainBytes = encoder.encode(text);
+    const compressedBytes = deflateSync(plainBytes);
+    const cipherBuffer = await crypto.subtle.encrypt({ name: "AES-GCM", iv: iv as any }, cryptoKey, compressedBytes as any);
+    const cipherBytes = new Uint8Array(cipherBuffer);
+
+    const token = new Uint8Array(21 + cipherBytes.length);
+    token[0] = 16 | 1;
+    token.set(salt, 1);
+    token.set(iv, 9);
+    token.set(cipherBytes, 21);
+
+    const enc = base85Encode(token);
+    return includePrefix ? `[INSPECTTOR:OFFLINE] ${enc}` : enc;
+}
+
+export async function decryptInspecttorOffline(tokenStr: string, secretWord: string): Promise<string> {
+    const effectivePass = (secretWord || "").trim();
+    if (!effectivePass) throw new Error("Secret Word is required for Inspecttor Offline decryption.");
+
+    const cleaned = tokenStr
+        .replace(/^\[INSPECTTOR:OFFLINE\]\s*/i, "")
+        .replace(/^\[INSPECTTOR\]\s*/i, "")
+        .replace(/\s+/g, "");
+    const rawBytes = base85Decode(cleaned);
+    if (!rawBytes || rawBytes.length < 37) throw new Error("Invalid inspecttor offline token");
+    if (rawBytes[0] >> 4 !== 1) throw new Error("Unknown offline format");
+
+    const isCompressed = (rawBytes[0] & 1) === 1;
+    const salt = rawBytes.slice(1, 9);
+    const iv = rawBytes.slice(9, 21);
+    const cipherData = rawBytes.slice(21);
+
+    const rawKey = await crypto.subtle.importKey("raw", encoder.encode(effectivePass), "PBKDF2", false, ["deriveKey"]);
+    const cryptoKey = await crypto.subtle.deriveKey(
+        { name: "PBKDF2", salt: salt as any, iterations: 310000, hash: "SHA-256" },
+        rawKey,
+        { name: "AES-GCM", length: 256 },
+        false,
+        ["decrypt"]
+    );
+
+    const decryptedBuffer = await crypto.subtle.decrypt(
+        { name: "AES-GCM", iv: iv as any },
+        cryptoKey,
+        cipherData as any
+    );
+    const decryptedBytes = new Uint8Array(decryptedBuffer);
+    const finalBytes = isCompressed ? inflateSync(decryptedBytes) : decryptedBytes;
+    return decoder.decode(finalBytes);
+}
+
+export function isInspecttorToken(str: string): boolean {
+    const cleaned = str
+        .replace(/^\u200B\u200C\u200B\u200D/, "")
+        .replace(/^\[INSPECTTOR(?::OFFLINE)?\]\s*/i, "")
+        .replace(/\s+/g, "");
+    if (cleaned.length < 35) return false;
+    const rawBytes = base85Decode(cleaned);
+    if (!rawBytes || rawBytes.length < 37) return false;
+    return rawBytes[0] === 1 || rawBytes[0] === 17 || (rawBytes[0] >> 4 === 1);
+}
+
+/* ==========================================================================
+   5. Funny Texts Engine (12 Styles)
    ========================================================================== */
 
 const SUPERSCRIPT_MAP: Record<string, string> = {
@@ -501,11 +588,13 @@ export function encryptFunny(text: string, style: FunnyStyle = "superscript", in
 }
 
 /* ==========================================================================
-   4. Vigenère Cipher
+   6. Vigenère Cipher
    ========================================================================== */
 
 export function vigenereEncrypt(text: string, key: string, includePrefix = false): string {
-    const cleanKey = (key || "Test").replace(/[^a-zA-Z]/g, "").toUpperCase() || "TEST";
+    const cleanKey = (key || "").replace(/[^a-zA-Z]/g, "").toUpperCase();
+    if (!cleanKey) throw new Error("Secret Word is required for Vigenère encryption.");
+
     let res = "";
     let ki = 0;
     for (let i = 0; i < text.length; i++) {
@@ -525,7 +614,9 @@ export function vigenereEncrypt(text: string, key: string, includePrefix = false
 
 export function vigenereDecrypt(text: string, key: string): string {
     const cleanText = text.replace(/^\[VIGENERE\]\s*/i, "").replace(/^\[VIG\]\s*/i, "");
-    const cleanKey = (key || "Test").replace(/[^a-zA-Z]/g, "").toUpperCase() || "TEST";
+    const cleanKey = (key || "").replace(/[^a-zA-Z]/g, "").toUpperCase();
+    if (!cleanKey) return "";
+
     let res = "";
     let ki = 0;
     for (let i = 0; i < cleanText.length; i++) {
@@ -544,7 +635,7 @@ export function vigenereDecrypt(text: string, key: string): string {
 }
 
 /* ==========================================================================
-   5. Morse Code Engine
+   7. Morse Code Engine
    ========================================================================== */
 
 const MORSE_MAP: Record<string, string> = {
@@ -591,7 +682,7 @@ export function morseToText(morse: string): string {
 }
 
 /* ==========================================================================
-   6. Plain Binary, Hexadecimal, and Base64 Engines
+   8. Plain Binary, Hexadecimal, and Base64 Engines
    ========================================================================== */
 
 export function textToPlainBinary(text: string, includePrefix = false): string {
@@ -656,7 +747,7 @@ export function base64ToText(b64Str: string): string | null {
 }
 
 /* ==========================================================================
-   7. ROT13
+   9. ROT13
    ========================================================================== */
 
 export function rot13(str: string): string {
@@ -679,13 +770,8 @@ export function rot13Decrypt(text: string): string {
 }
 
 /* ==========================================================================
-   8. XOR Cipher Engine (with Secret Word)
+   10. XOR Cipher Engine (with Secret Word)
    ========================================================================== */
-
-export function getEffectiveXorKey(key: string): Uint8Array {
-    const trimmed = (key || "").trim();
-    return encoder.encode(trimmed || "Test");
-}
 
 export function xorBytes(data: Uint8Array, key: Uint8Array): Uint8Array {
     const result = new Uint8Array(data.length);
@@ -702,9 +788,11 @@ export function xorEncrypt(
     includePrefix = false
 ): string {
     if (!plainText) return "";
+    const cleanKey = (secretWord || "").trim();
+    if (!cleanKey) throw new Error("Secret Word is required for XOR encryption.");
 
     const plainBytes = encoder.encode(plainText);
-    const keyBytes = getEffectiveXorKey(secretWord);
+    const keyBytes = encoder.encode(cleanKey);
     const encryptedBytes = xorBytes(plainBytes, keyBytes);
 
     if (format === "hex") {
@@ -734,6 +822,9 @@ export function xorEncrypt(
 }
 
 export function xorDecrypt(cipherText: string, secretWord: string): { success: boolean; text: string } {
+    const cleanKey = (secretWord || "").trim();
+    if (!cleanKey) return { success: false, text: "Secret Word is missing." };
+
     let cleaned = cipherText.trim();
     let format: XorFormat = "binary";
 
@@ -771,31 +862,34 @@ export function xorDecrypt(cipherText: string, secretWord: string): { success: b
         return { success: false, text: "Invalid XOR ciphertext." };
     }
 
-    const keyBytes = getEffectiveXorKey(secretWord);
+    const keyBytes = encoder.encode(cleanKey);
     const decryptedBytes = xorBytes(rawBytes, keyBytes);
     return { success: true, text: decoder.decode(decryptedBytes) };
 }
 
 /* ==========================================================================
-   9. Unified Encrypt & Robust Auto-Decrypt Functions
+   11. Unified Encrypt & Auto-Decrypt Functions
    ========================================================================== */
 
 export async function encryptMessage(
     text: string,
     method: CipherMethod,
-    secretWord: string,
+    secretWord = "",
     xorFormat: XorFormat = "binary",
     includePrefix = false,
-    funnyStyle: FunnyStyle = "superscript"
+    funnyStyle: FunnyStyle = "superscript",
+    inspecttorAccessKey = ""
 ): Promise<string> {
     if (!text) return "";
 
     try {
         switch (method) {
+            case "inspecttor_server":
+                return await encryptInspecttorServer(text, secretWord, inspecttorAccessKey, includePrefix);
+            case "inspecttor_offline":
+                return await encryptInspecttorOffline(text, secretWord, includePrefix);
             case "pgp":
                 return await encryptPgp(text, secretWord, includePrefix);
-            case "inspecttor":
-                return await encryptInspecttor(text, secretWord, includePrefix);
             case "funny":
                 return encryptFunny(text, funnyStyle, includePrefix);
             case "vigenere":
@@ -814,15 +908,16 @@ export async function encryptMessage(
             default:
                 return xorEncrypt(text, secretWord, xorFormat, includePrefix);
         }
-    } catch (err) {
+    } catch (err: any) {
         console.error("[EncryptChat] Encryption error:", err);
-        return text;
+        throw err;
     }
 }
 
 export async function decryptMessage(
     ciphertext: string,
-    secretWord: string
+    secretWord = "",
+    inspecttorAccessKey = ""
 ): Promise<DecryptResult> {
     if (!ciphertext || !ciphertext.trim()) {
         return { success: false, text: "", method: "unknown", error: "Empty message" };
@@ -838,24 +933,55 @@ export async function decryptMessage(
         } catch {}
     }
 
-    // 2. Tag-less / Tagged Inspecttor Token Detection (Matches friend's plugin token 100%)
+    // 2. Inspecttor Token Auto-Detection (Server Seed or Offline Standalone)
     if (isInspecttorToken(trimmed)) {
+        // Try Server Mode first if accessKey is provided
+        if (inspecttorAccessKey) {
+            try {
+                const dec = await decryptInspecttorServer(trimmed, secretWord, inspecttorAccessKey);
+                if (dec && dec.length > 0) {
+                    return { success: true, text: dec, method: "inspecttor_server" };
+                }
+            } catch {}
+        }
+        // Try Offline Standalone Mode
         try {
-            const dec = await decryptInspecttor(trimmed, secretWord);
+            const dec = await decryptInspecttorOffline(trimmed, secretWord);
             if (dec && dec.length > 0) {
-                return { success: true, text: dec, method: "inspecttor" };
+                return { success: true, text: dec, method: "inspecttor_offline" };
             }
         } catch {}
     }
 
-    // 3. Tag-based Fast Match
+    // 3. Tag-based Fast Matches
+    if (trimmed.startsWith("[INSPECTTOR:OFFLINE]")) {
+        try {
+            const dec = await decryptInspecttorOffline(trimmed, secretWord);
+            if (dec && dec.length > 0) return { success: true, text: dec, method: "inspecttor_offline" };
+        } catch {}
+    }
+
+    if (trimmed.startsWith("[INSPECTTOR]")) {
+        if (inspecttorAccessKey) {
+            try {
+                const dec = await decryptInspecttorServer(trimmed, secretWord, inspecttorAccessKey);
+                if (dec && dec.length > 0) return { success: true, text: dec, method: "inspecttor_server" };
+            } catch {}
+        }
+        try {
+            const dec = await decryptInspecttorOffline(trimmed, secretWord);
+            if (dec && dec.length > 0) return { success: true, text: dec, method: "inspecttor_offline" };
+        } catch {}
+    }
+
     if (trimmed.startsWith("[XOR")) {
         const xorRes = xorDecrypt(trimmed, secretWord);
         if (xorRes.success) return { success: true, text: xorRes.text, method: "xor" };
     }
 
     if (trimmed.startsWith("[VIGENERE]") || trimmed.startsWith("[VIG]")) {
-        return { success: true, text: vigenereDecrypt(trimmed, secretWord), method: "vigenere" };
+        const dec = vigenereDecrypt(trimmed, secretWord);
+        if (dec && dec.length > 0) return { success: true, text: dec, method: "vigenere" };
     }
 
     if (trimmed.startsWith("[HEX]")) {

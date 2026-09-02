@@ -13,7 +13,8 @@ export const settings = definePluginSettings({
         type: OptionType.SELECT,
         description: "Encryption and Obfuscation Method",
         options: [
-            { label: "Inspecttor", value: "inspecttor", default: true },
+            { label: "Inspecttor Server", value: "inspecttor_server", default: true },
+            { label: "Inspecttor Offline", value: "inspecttor_offline" },
             { label: "PGP", value: "pgp" },
             { label: "Funny Texts", value: "funny" },
             { label: "XOR Cipher", value: "xor" },
@@ -46,7 +47,12 @@ export const settings = definePluginSettings({
     secretWord: {
         type: OptionType.STRING,
         description: "Secret Word / Passphrase",
-        default: "Test"
+        default: ""
+    },
+    inspecttorAccessKey: {
+        type: OptionType.STRING,
+        description: "Inspecttor Server Access Key",
+        default: ""
     },
     xorFormat: {
         type: OptionType.SELECT,

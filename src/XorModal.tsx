@@ -1,5 +1,5 @@
 /*
- * Encryption Chat Plugin - Settings & Testing Modal
+ * Encrypt Chat - Settings & Testing Modal
  */
 
 import { Divider } from "@components/Divider";
@@ -26,7 +26,8 @@ import {
 import { settings } from "./settings";
 
 const methodOptions = [
-    { label: "Inspecttor", value: "inspecttor" as CipherMethod },
+    { label: "Inspecttor Server", value: "inspecttor_server" as CipherMethod },
+    { label: "Inspecttor Offline", value: "inspecttor_offline" as CipherMethod },
     { label: "PGP", value: "pgp" as CipherMethod },
     { label: "Funny Texts", value: "funny" as CipherMethod },
     { label: "XOR Cipher", value: "xor" as CipherMethod },
@@ -60,10 +61,20 @@ const xorFormatOptions = [
 ];
 
 function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps }) {
-    const { method, funnyStyle, secretWord, xorFormat, includeMethodPrefix, autoEncrypt, autoDecrypt } = settings.use([
+    const {
+        method,
+        funnyStyle,
+        secretWord,
+        inspecttorAccessKey,
+        xorFormat,
+        includeMethodPrefix,
+        autoEncrypt,
+        autoDecrypt
+    } = settings.use([
         "method",
         "funnyStyle",
         "secretWord",
+        "inspecttorAccessKey",
         "xorFormat",
         "includeMethodPrefix",
         "autoEncrypt",
@@ -87,17 +98,18 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
                     secretWord,
                     xorFormat as XorFormat,
                     includeMethodPrefix,
-                    funnyStyle as FunnyStyle
+                    funnyStyle as FunnyStyle,
+                    inspecttorAccessKey
                 );
                 if (!isCurrent) return;
                 setLiveEncrypted(enc);
 
-                const dec = await decryptMessage(enc, secretWord);
+                const dec = await decryptMessage(enc, secretWord, inspecttorAccessKey);
                 if (!isCurrent) return;
                 setLiveDecrypted(dec.success ? dec.text : `[Error: ${dec.text}]`);
             } catch (err: any) {
                 if (isCurrent) {
-                    setLiveEncrypted(`[Error: ${err?.message || "Encryption failed"}]`);
+                    setLiveEncrypted(`[${err?.message || "Encryption failed"}]`);
                     setLiveDecrypted("");
                 }
             } finally {
@@ -109,9 +121,16 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
             isCurrent = false;
             clearTimeout(timer);
         };
-    }, [testInput, method, funnyStyle, secretWord, xorFormat, includeMethodPrefix]);
+    }, [testInput, method, funnyStyle, secretWord, inspecttorAccessKey, xorFormat, includeMethodPrefix]);
 
-    const needsSecretKey = method === "pgp" || method === "inspecttor" || method === "xor" || method === "vigenere";
+    const needsSecretKey =
+        method === "pgp" ||
+        method === "inspecttor_server" ||
+        method === "inspecttor_offline" ||
+        method === "xor" ||
+        method === "vigenere";
+
+    const isServerInspecttor = method === "inspecttor_server";
 
     return (
         <Modal {...rootProps} title="Encrypt Chat - Vencord Settings">
@@ -130,6 +149,34 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
                 />
             </section>
 
+            {/* Inspecttor Server Access Key */}
+            {isServerInspecttor && (
+                <section className={Margins.bottom16}>
+                    <Forms.FormTitle tag="h3">Inspecttor Server Access Key</Forms.FormTitle>
+                    <TextInput
+                        value={inspecttorAccessKey || ""}
+                        placeholder="Enter inspecttor access key..."
+                        onChange={(val: string) => {
+                            settings.store.inspecttorAccessKey = val;
+                        }}
+                    />
+                </section>
+            )}
+
+            {/* Secret Word */}
+            {needsSecretKey && (
+                <section className={Margins.bottom16}>
+                    <Forms.FormTitle tag="h3">Secret Word / Passphrase</Forms.FormTitle>
+                    <TextInput
+                        value={secretWord || ""}
+                        placeholder="Enter your secret passphrase..."
+                        onChange={(val: string) => {
+                            settings.store.secretWord = val;
+                        }}
+                    />
+                </section>
+            )}
+
             {/* Funny Text Style */}
             {method === "funny" && (
                 <section className={Margins.bottom16}>
@@ -142,20 +189,6 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
                         closeOnSelect={true}
                         onChange={(val: FunnyStyle) => {
                             settings.store.funnyStyle = val;
-                        }}
-                    />
-                </section>
-            )}
-
-            {/* Secret Word */}
-            {needsSecretKey && (
-                <section className={Margins.bottom16}>
-                    <Forms.FormTitle tag="h3">Secret Word</Forms.FormTitle>
-                    <TextInput
-                        value={secretWord || ""}
-                        placeholder="Enter your Secret Word..."
-                        onChange={(val: string) => {
-                            settings.store.secretWord = val;
                         }}
                     />
                 </section>

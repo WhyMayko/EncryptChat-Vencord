@@ -1,6 +1,6 @@
 /*
  * Encrypt Chat - Vencord Plugin
- * Encrypt and decrypt messages with PGP, Inspecttor, XOR, Vigenère, Morse Code, Binary, and Funny Texts.
+ * Encrypt and decrypt messages with Inspecttor Server, Inspecttor Offline, PGP, XOR, Vigenère, Morse Code, Binary, and Funny Texts.
  */
 
 import "./styles.css";
@@ -49,7 +49,11 @@ const messageCtxPatch: NavContextMenuPatchCallback = (children, { message }: { m
             icon={XorIcon}
             leadingAccessory={{ type: "icon", icon: XorIcon }}
             action={async () => {
-                const res = await decryptMessage(content, settings.store.secretWord);
+                const res = await decryptMessage(
+                    content,
+                    settings.store.secretWord,
+                    settings.store.inspecttorAccessKey
+                );
                 handleMessageDecrypt(message.id, res);
             }}
         />
@@ -58,7 +62,7 @@ const messageCtxPatch: NavContextMenuPatchCallback = (children, { message }: { m
 
 export default definePlugin({
     name: "EncryptChat",
-    description: "Encrypt and decrypt messages using PGP, Inspecttor, XOR, Vigenère, Morse Code, Binary, and Funny Texts.",
+    description: "Encrypt and decrypt messages using Inspecttor Server, Inspecttor Offline, PGP, XOR, Vigenère, Morse Code, Binary, and Funny Texts.",
     tags: ["Chat", "Utility", "Security"],
     authors: [
         {
@@ -91,7 +95,11 @@ export default definePlugin({
                 message,
                 channel: ChannelStore.getChannel(message.channel_id),
                 onClick: async () => {
-                    const res = await decryptMessage(content, settings.store.secretWord);
+                    const res = await decryptMessage(
+                        content,
+                        settings.store.secretWord,
+                        settings.store.inspecttorAccessKey
+                    );
                     handleMessageDecrypt(message.id, res);
                 }
             };
@@ -109,7 +117,8 @@ export default definePlugin({
                 settings.store.secretWord,
                 settings.store.xorFormat as XorFormat,
                 settings.store.includeMethodPrefix,
-                settings.store.funnyStyle as FunnyStyle
+                settings.store.funnyStyle as FunnyStyle,
+                settings.store.inspecttorAccessKey
             );
 
             if (encrypted) {
