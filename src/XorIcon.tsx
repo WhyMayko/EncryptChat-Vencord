@@ -3,7 +3,7 @@
  */
 
 import { ChatBarButton, ChatBarButtonFactory } from "@api/ChatButtons";
-import { classNameFactory, classes } from "@utils/classes";
+import { classNameFactory, classes } from "@utils/css";
 
 import { settings } from "./settings";
 import { openXorModal } from "./XorModal";
