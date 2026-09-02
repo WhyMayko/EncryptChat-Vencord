@@ -1,5 +1,5 @@
 /*
- * Encrypt Chat - Chat Bar Lock Icon Component with Smooth Shackle Animation
+ * Encrypt Chat - Chat Bar Lock Icon Component
  */
 
 import { ChatBarButton, ChatBarButtonFactory } from "@api/ChatButtons";
@@ -20,11 +20,9 @@ export function XorIcon({ isLocked = false, width = 20, height = 20, className, 
             width={width}
             height={height}
             viewBox="0 0 24 24"
-            className={cl("icon", isLocked ? "locked" : "unlocked", { "auto-encrypt": isLocked }, className)}
+            className={cl("icon", isLocked ? "locked" : "unlocked", className)}
             style={{
                 overflow: "visible",
-                color: isLocked ? "var(--green-360, #23a55a)" : undefined,
-                fill: isLocked ? "var(--green-360, #23a55a)" : "currentColor",
                 ...style
             }}
             {...props}
@@ -67,6 +65,10 @@ export const XorChatBarIcon: ChatBarButtonFactory = () => {
         >
             <XorIcon
                 isLocked={autoEncrypt}
+                className={cl({ "auto-encrypt": autoEncrypt, "chat-button": true })}
+                style={{
+                    color: autoEncrypt ? "var(--green-360, #23a55a)" : undefined
+                }}
                 width={20}
                 height={20}
             />
