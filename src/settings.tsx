@@ -1,5 +1,5 @@
 /*
- * Encryption Chat Plugin - Settings Definition
+ * Encrypt Chat - Settings Definition
  */
 
 import { definePluginSettings } from "@api/Settings";
@@ -22,8 +22,7 @@ export const settings = definePluginSettings({
             { label: "Binary", value: "binary" },
             { label: "Hexadecimal", value: "hex" },
             { label: "Base64", value: "base64" },
-            { label: "ROT13", value: "rot13" },
-            { label: "Reverse Text", value: "reverse" }
+            { label: "ROT13", value: "rot13" }
         ] as const
     },
     funnyStyle: {

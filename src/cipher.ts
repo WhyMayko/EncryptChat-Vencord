@@ -1,6 +1,6 @@
 /*
- * Encryption Chat Plugin - Cipher & Translation Engine
- * Supports: PGP, Inspecttor, XOR Cipher, Vigenère, Morse Code, Binary, Hexadecimal, Base64, ROT13, Funny Texts
+ * Encrypt Chat - Cipher & Translation Engine
+ * Supports: PGP, Inspecttor, Funny Texts, XOR Cipher, Vigenère, Morse Code, Binary, Hexadecimal, Base64, ROT13
  */
 
 import { deflateSync, inflateSync } from "fflate";
@@ -9,15 +9,14 @@ import * as openpgp from "openpgp";
 export type CipherMethod =
     | "pgp"
     | "inspecttor"
+    | "funny"
     | "xor"
     | "vigenere"
     | "morse"
     | "binary"
     | "hex"
     | "base64"
-    | "rot13"
-    | "funny"
-    | "reverse";
+    | "rot13";
 
 export type XorFormat = "binary" | "hex" | "base64";
 
@@ -773,14 +772,12 @@ export async function encryptMessage(
                 return textToBase64(text, includePrefix);
             case "rot13":
                 return rot13Encrypt(text, includePrefix);
-            case "reverse":
-                return reverseText(text, includePrefix);
             case "xor":
             default:
                 return xorEncrypt(text, secretWord, xorFormat, includePrefix);
         }
     } catch (err) {
-        console.error("[EncryptionChat] Encryption error:", err);
+        console.error("[EncryptChat] Encryption error:", err);
         return text;
     }
 }

@@ -35,8 +35,7 @@ const methodOptions = [
     { label: "Binary", value: "binary" as CipherMethod },
     { label: "Hexadecimal", value: "hex" as CipherMethod },
     { label: "Base64", value: "base64" as CipherMethod },
-    { label: "ROT13", value: "rot13" as CipherMethod },
-    { label: "Reverse Text", value: "reverse" as CipherMethod }
+    { label: "ROT13", value: "rot13" as CipherMethod }
 ];
 
 const funnyStyleOptions = [

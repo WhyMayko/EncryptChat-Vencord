@@ -1,5 +1,5 @@
 /*
- * Encryption Chat Plugin - Message Accessory Component
+ * Encrypt Chat - Message Accessory Component
  */
 
 import { Message } from "@vencord/discord-types";
@@ -40,7 +40,6 @@ const METHOD_LABELS: Record<string, string> = {
     hex: "Hexadecimal",
     base64: "Base64",
     rot13: "ROT13",
-    reverse: "Reverse Text",
     unknown: "Decrypted"
 };
 
