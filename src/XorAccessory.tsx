@@ -5,7 +5,8 @@
 import { Message } from "@vencord/discord-types";
 import { Parser, useEffect, useState } from "@webpack/common";
 
-import { DecryptResult } from "./cipher";
+import { DecryptResult, decryptMessage } from "./cipher";
+import { settings } from "./settings";
 import { XorIcon } from "./XorIcon";
 
 const DecryptSetters = new Map<string, (result: DecryptResult | undefined) => void>();
@@ -15,6 +16,15 @@ export function handleMessageDecrypt(messageId: string, data: DecryptResult) {
     if (setter) {
         setter(data);
     }
+}
+
+export function getMessageContent(message: Message): string {
+    return (
+        message.content ||
+        message.messageSnapshots?.[0]?.message.content ||
+        message.embeds?.find(embed => embed.type === "auto_moderation_message")?.rawDescription ||
+        ""
+    );
 }
 
 function Dismiss({ onDismiss }: { onDismiss: () => void }) {
@@ -45,15 +55,32 @@ const METHOD_LABELS: Record<string, string> = {
 
 export function XorAccessory({ message }: { message: Message }) {
     const [decrypted, setDecrypted] = useState<DecryptResult | undefined>();
+    const { autoDecrypt, secretWord } = settings.use(["autoDecrypt", "secretWord"]);
 
     useEffect(() => {
         if ((message as any).vencordEmbeddedBy) return;
 
         DecryptSetters.set(message.id, setDecrypted);
+
+        let isCurrent = true;
+        if (autoDecrypt) {
+            const content = getMessageContent(message);
+            if (content && content.trim()) {
+                decryptMessage(content, secretWord)
+                    .then(res => {
+                        if (isCurrent && res.success) {
+                            setDecrypted(res);
+                        }
+                    })
+                    .catch(() => {});
+            }
+        }
+
         return () => {
+            isCurrent = false;
             DecryptSetters.delete(message.id);
         };
-    }, [message.id]);
+    }, [message.id, (message as any).content, autoDecrypt, secretWord]);
 
     if (!decrypted) return null;
 

@@ -100,6 +100,7 @@ Set-JsonProp $j.plugins "EncryptChat" ([pscustomobject]@{
     xorFormat           = "binary"
     includeMethodPrefix = $false
     autoEncrypt         = $false
+    autoDecrypt         = $true
 })
 
 Set-JsonProp $j.plugins "ChatInputButtonAPI"    ([pscustomobject]@{ enabled = $true })

@@ -67,6 +67,11 @@ export const settings = definePluginSettings({
         description: "Automatically encrypt chat messages before sending",
         default: false
     },
+    autoDecrypt: {
+        type: OptionType.BOOLEAN,
+        description: "Automatically decrypt and translate incoming messages",
+        default: true
+    },
     openSettingsModal: {
         type: OptionType.COMPONENT,
         component: () => (

@@ -60,13 +60,14 @@ const xorFormatOptions = [
 ];
 
 function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps }) {
-    const { method, funnyStyle, secretWord, xorFormat, includeMethodPrefix, autoEncrypt } = settings.use([
+    const { method, funnyStyle, secretWord, xorFormat, includeMethodPrefix, autoEncrypt, autoDecrypt } = settings.use([
         "method",
         "funnyStyle",
         "secretWord",
         "xorFormat",
         "includeMethodPrefix",
-        "autoEncrypt"
+        "autoEncrypt",
+        "autoDecrypt"
     ]);
 
     const [testInput, setTestInput] = useState("Hello World");
@@ -199,6 +200,19 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
                 value={autoEncrypt}
                 onChange={(val: boolean) => {
                     settings.store.autoEncrypt = val;
+                }}
+                hideBorder
+            />
+
+            <Divider className={Margins.bottom16} />
+
+            {/* Auto Decrypt Toggle */}
+            <FormSwitch
+                title="Auto-Translate / Decrypt Incoming Messages"
+                description="Automatically decrypt and display incoming encrypted or funny messages directly under the chat message without needing to click."
+                value={autoDecrypt}
+                onChange={(val: boolean) => {
+                    settings.store.autoDecrypt = val;
                 }}
                 hideBorder
             />
