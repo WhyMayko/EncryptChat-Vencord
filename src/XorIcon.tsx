@@ -42,7 +42,7 @@ export const XorChatBarIcon: ChatBarButtonFactory = () => {
 
     return (
         <ChatBarButton
-            tooltip={autoEncrypt ? "Encrypt Chat (Active)" : "Encrypt Chat"}
+            tooltip="Encrypt Chat"
             onClick={() => {
                 settings.store.autoEncrypt = !settings.store.autoEncrypt;
             }}
