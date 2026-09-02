@@ -95,7 +95,7 @@ export function XorAccessory({ message }: { message: Message }) {
                     <XorIcon
                         width={16}
                         height={16}
-                        isLocked={false}
+                        isLocked={true}
                         className="vc-xor-accessory-icon vc-xor-error-icon"
                     />
                     <span className="vc-xor-error-text">{decrypted.text}</span>
@@ -115,7 +115,7 @@ export function XorAccessory({ message }: { message: Message }) {
                 <XorIcon
                     width={16}
                     height={16}
-                    isLocked={true}
+                    isLocked={false}
                     className="vc-xor-accessory-icon vc-xor-success-icon"
                 />
                 <span className="vc-xor-content">

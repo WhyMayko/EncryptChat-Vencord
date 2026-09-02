@@ -1,6 +1,5 @@
 /*
- * Encrypt Chat - Chat Bar Lock Icon Component
- * Proportional lock with connected shackle and smooth pivot animation
+ * Encrypt Chat - Lock Icon Component
  */
 
 import { ChatBarButton, ChatBarButtonFactory } from "@api/ChatButtons";
@@ -15,7 +14,7 @@ export interface XorIconProps extends React.SVGProps<SVGSVGElement> {
     isLocked?: boolean;
 }
 
-export function XorIcon({ isLocked = false, width = 20, height = 20, className, style, ...props }: XorIconProps) {
+export function XorIcon({ isLocked = true, width = 20, height = 20, className, style, ...props }: XorIconProps) {
     return (
         <svg
             width={width}
@@ -28,13 +27,13 @@ export function XorIcon({ isLocked = false, width = 20, height = 20, className, 
             }}
             {...props}
         >
-            {/* Shackle: Extends into y=10.5 to connect seamlessly with the body */}
+            {/* Shackle: Connected directly into the body at y=10.5 */}
             <path
                 className={cl("shackle")}
                 fill="currentColor"
                 d="M7 10.5V6.5a5 5 0 0 1 10 0v4h-2.2V6.5a2.8 2.8 0 0 0-5.6 0v4H7z"
             />
-            {/* Body: Rounded rect with keyhole */}
+            {/* Lock Body with Keyhole */}
             <path
                 className={cl("body")}
                 fill="currentColor"
