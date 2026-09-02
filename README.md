@@ -29,7 +29,6 @@ That's it! Restart Discord (`Ctrl + R`) and enjoy.
 - 🛡️ **OpenPGP Industry Standard**: Full public/private armored PGP encryption.
 - ⚡ **Ultra-Fast Performance**: Built-in in-memory LRU cache guarantees **0.001ms instantaneous decrypts** with silky 60+ FPS scrolling.
 - 📋 **1-Click Copy**: Convenient `Copy` button directly in the decrypted accessory box.
-- ⌨️ **Keyboard Shortcut**: Press `Ctrl + Alt + E` anywhere to instantly toggle encryption on/off with an on-screen toast!
 - 🎨 **Adaptive Visual Badges**:
   - **✅ Decrypted Messages**: Vibrant translucent green pill (`#23a55a`) with an open lock icon and crisp white text.
   - **❌ Failed Messages**: Translucent red pill (`#fa777c`) with a closed lock icon.
@@ -44,7 +43,6 @@ That's it! Restart Discord (`Ctrl + R`) and enjoy.
 | Action | Shortcut / Trigger |
 |---|---|
 | **Toggle Encryption** | Left-Click Lock Icon in Chat Bar |
-| **Quick Toggle Anywhere** | `Ctrl + Alt + E` (shows instant on-screen toast) |
 | **Open Settings & Playground** | Right-Click Lock Icon in Chat Bar |
 | **Manual Decrypt** | Right-Click any message → `Decrypt Message` or click the lock on message popover |
 | **Copy Decrypted Text** | Click `Copy` next to `Dismiss` on the decrypted card |

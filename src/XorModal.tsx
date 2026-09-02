@@ -273,7 +273,7 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
             {/* Auto Encrypt Toggle */}
             <FormSwitch
                 title="Auto-Encrypt Outgoing Messages"
-                description="Automatically encrypt sent messages. Toggle with the chat bar lock button or press Ctrl + Alt + E."
+                description="Automatically encrypt sent messages. Toggle anytime with the chat bar lock button."
                 value={autoEncrypt}
                 onChange={(val: boolean) => {
                     settings.store.autoEncrypt = val;
@@ -351,13 +351,12 @@ function EncryptionSettingsModal({ rootProps }: { rootProps: RenderModalProps })
                     paddingTop: "12px",
                     borderTop: "1px solid var(--background-modifier-accent)",
                     display: "flex",
-                    justifyContent: "space-between",
+                    justifyContent: "center",
                     alignItems: "center",
                     fontSize: "12px",
                     color: "var(--text-muted)"
                 }}
             >
-                <span>💡 Shortcut: <strong style={{ color: "var(--text-normal)" }}>Ctrl + Alt + E</strong></span>
                 <span>Crafted with 💜 by <strong style={{ color: "var(--brand-experiment, #5865F2)" }}>@whymayko</strong></span>
             </footer>
         </Modal>

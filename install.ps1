@@ -118,10 +118,9 @@ Write-Host "       Installation Completed Successfully!        " -ForegroundColo
 Write-Host "====================================================" -ForegroundColor Cyan
 Write-Host "You can now open Discord!" -ForegroundColor Yellow
 Write-Host ""
-Write-Host "Controls & Shortcuts:" -ForegroundColor Cyan
+Write-Host "Controls:" -ForegroundColor Cyan
 Write-Host "  - Left Click Lock:   Toggle encryption on/off" -ForegroundColor Gray
 Write-Host "  - Right Click Lock:  Open Settings & Live Playground" -ForegroundColor Gray
-Write-Host "  - Ctrl + Alt + E:    Quick toggle encryption from anywhere" -ForegroundColor Gray
 Write-Host ""
 Write-Host "Crafted with love by @whymayko" -ForegroundColor Magenta
 Write-Host ""

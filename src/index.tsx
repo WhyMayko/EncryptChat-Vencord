@@ -9,7 +9,7 @@ import "./styles.css";
 import { findGroupChildrenByChildId, NavContextMenuPatchCallback } from "@api/ContextMenu";
 import definePlugin from "@utils/types";
 import { Message } from "@vencord/discord-types";
-import { ChannelStore, Menu, showToast } from "@webpack/common";
+import { ChannelStore, Menu } from "@webpack/common";
 
 import {
     CipherMethod,
@@ -62,17 +62,6 @@ const messageCtxPatch: NavContextMenuPatchCallback = (children, { message }: { m
     );
 };
 
-function handleGlobalKeydown(e: KeyboardEvent) {
-    // Ctrl + Alt + E: Quick toggle encryption on/off from anywhere
-    if (e.ctrlKey && e.altKey && (e.key === "e" || e.key === "E")) {
-        e.preventDefault();
-        settings.store.autoEncrypt = !settings.store.autoEncrypt;
-        showToast(
-            settings.store.autoEncrypt ? "🔒 Encrypt Chat: ON" : "🔓 Encrypt Chat: OFF"
-        );
-    }
-}
-
 export default definePlugin({
     name: "EncryptChat",
     description: "Military-grade encryption & fun typography for Discord. Created by @whymayko.",
@@ -84,14 +73,6 @@ export default definePlugin({
         }
     ],
     settings,
-
-    start() {
-        window.addEventListener("keydown", handleGlobalKeydown);
-    },
-
-    stop() {
-        window.removeEventListener("keydown", handleGlobalKeydown);
-    },
 
     contextMenus: {
         message: messageCtxPatch
