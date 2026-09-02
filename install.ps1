@@ -121,6 +121,6 @@ Write-Host "====================================================" -ForegroundCol
 Write-Host "       Installation Completed Successfully!        " -ForegroundColor Green
 Write-Host "====================================================" -ForegroundColor Cyan
 Write-Host "The lock icon will appear in your chat bar." -ForegroundColor Gray
-Write-Host "- Normal Click: Toggle encryption on/off (turns green when active)." -ForegroundColor Gray
-Write-Host "- Shift + Click: Open Settings & Live Playground." -ForegroundColor Gray
+Write-Host "- Left Click:  Toggle encryption on/off (turns green when active)." -ForegroundColor Gray
+Write-Host "- Right Click: Open Settings & Live Playground." -ForegroundColor Gray
 Write-Host ""

@@ -18,7 +18,7 @@ iwr -useb https://raw.githubusercontent.com/WhyMayko/Encrypt-Chat-Vencord/main/i
 
 ## ✨ Features
 
-- 🔒 **11 Complete Encryption & Obfuscation Methods**:
+- 🔒 **10 Complete Encryption & Obfuscation Methods**:
   1. **`Inspecttor`**: AES-GCM 256-bit + Raw Deflate + Base85 *(compatible with inspecttor.xyz)*
   2. **`PGP`**: Industry-standard OpenPGP armored encryption protected by passphrase
   3. **`Funny Texts`**:
@@ -41,11 +41,13 @@ iwr -useb https://raw.githubusercontent.com/WhyMayko/Encrypt-Chat-Vencord/main/i
   8. **`Hexadecimal`**: Byte hex format
   9. **`Base64`**: Standard Base64
   10. **`ROT13`**: 13-shift substitution
-  11. **`Reverse Text`**: Direct reversed characters
 
 - 🧠 **Instant Auto-Detection**: Click **`Decrypt Message`** on any message and the plugin detects the format and restores the plaintext in 0.001ms.
+- ⚡ **Auto-Translate Incoming**: Encrypted or funny text messages automatically decrypt in real-time below the message!
 - 🥷 **Invisible Tag-less Mode**: Messages can be sent completely raw without any `[...]` tags.
-- 🟢 **Integrated Chat Bar Lock**: Click the green lock icon to toggle auto-encryption; Shift+Click to open settings and live testing playground.
+- 🟢 **Integrated Chat Bar Lock**:
+  - **Left Click**: Toggle auto-encrypt on/off (turns green when active).
+  - **Right Click**: Open Settings Modal and Live Playground.
 - ⚡ **100% Local & Fast**: Zero external network dependencies, no lag, works completely offline.
 
 ---
@@ -54,9 +56,9 @@ iwr -useb https://raw.githubusercontent.com/WhyMayko/Encrypt-Chat-Vencord/main/i
 
 | Action | Control |
 |---|---|
-| **Toggle Auto-Encrypt** | Left-click lock icon in chat bar (turns Green) |
-| **Open Settings & Live Playground** | Shift + Click or Right-click lock icon |
-| **Decrypt / Read Message** | Click "Decrypt Message" popover button on any message |
+| **Toggle Auto-Encrypt** | Left-Click lock icon in chat bar (turns Green) |
+| **Open Settings & Live Playground** | Right-Click lock icon |
+| **Decrypt / Read Message** | Automatic with Auto-Translate, or click "Decrypt Message" popover button |
 | **Dismiss Decrypted View** | Click "Dismiss" on the decrypted card |
 
 ---

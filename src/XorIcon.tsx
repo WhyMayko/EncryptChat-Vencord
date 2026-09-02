@@ -41,15 +41,12 @@ export const XorChatBarIcon: ChatBarButtonFactory = ({ isMainChat, settings }) =
                     }
                 />
             )}
-            onClick={e => {
-                if (e.shiftKey) {
-                    openXorModal();
-                } else {
-                    settings.store.autoEncrypt = !settings.store.autoEncrypt;
-                }
+            onClick={() => {
+                settings.store.autoEncrypt = !settings.store.autoEncrypt;
             }}
             onContextMenu={e => {
                 e.preventDefault();
+                e.stopPropagation();
                 openXorModal();
             }}
             buttonProps={{
