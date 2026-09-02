@@ -37,7 +37,7 @@ if (-not (Test-Path $BackupDir)) {
 
 # 3. Close Discord
 Write-Host "[+] Closing Discord to apply updates..." -ForegroundColor Yellow
-Get-Process Discord, DiscordPTB, DiscordCanary, DiscordDevelopment -ErrorAction SilentlyContinue | Stop-Process -Force
+Get-Process Discord -ErrorAction SilentlyContinue | Stop-Process -Force
 Start-Sleep -Seconds 2
 
 # 4. Download latest Encrypt Chat bundle files
@@ -111,27 +111,9 @@ $jsonText = $j | ConvertTo-Json -Depth 30
 
 # 6. Restart Discord
 Write-Host "[+] Restarting Discord..." -ForegroundColor Green
-$discordUpdates = @(
-    (Join-Path $env:LOCALAPPDATA "Discord\Update.exe"),
-    (Join-Path $env:LOCALAPPDATA "DiscordPTB\Update.exe"),
-    (Join-Path $env:LOCALAPPDATA "DiscordCanary\Update.exe"),
-    (Join-Path $env:LOCALAPPDATA "DiscordDevelopment\Update.exe")
-)
-
-$started = $false
-foreach ($upPath in $discordUpdates) {
-    if (Test-Path $upPath) {
-        Start-Process $upPath -ArgumentList "--processStart Discord.exe"
-        $started = $true
-        break
-    }
-}
-
-if (-not $started) {
-    $directDiscord = Get-ChildItem -Path "$env:LOCALAPPDATA\Discord" -Recurse -Filter "Discord.exe" -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
-    if ($directDiscord -and (Test-Path $directDiscord)) {
-        Start-Process $directDiscord
-    }
+$update = Join-Path $env:LOCALAPPDATA "Discord\Update.exe"
+if (Test-Path $update) {
+    & $update --processStart Discord.exe
 }
 
 Write-Host ""
